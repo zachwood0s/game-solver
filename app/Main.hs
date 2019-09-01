@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import TicTacToe (startGame, newGame)
 
 main :: IO ()
-main = someFunc
+main = startGame (newGame (3, 3) 3)
