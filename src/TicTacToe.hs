@@ -3,25 +3,60 @@ module TicTacToe (
 ) where
 
 import Control.Lens (set, ix)
-import Data.Maybe (isNothing, catMaybes)
+import Data.Maybe (isNothing, catMaybes, fromMaybe)
+import Data.Either 
+import Data.Either.Combinators
 import Utils
 import Data.Function
 import Text.Read (readMaybe)
+import Control.Monad
 import Data.List (tails, transpose)
+import System.Exit
+import Text.ParserCombinators.Parsec
 
 data Player = O | X deriving (Show, Eq)
 data GameState = Won Player | Stalemate | Running deriving (Show, Eq)
 type BoardMark = Maybe Player
 type BoardSize = (Int, Int)
 
-newtype Board = Board [[BoardMark]] deriving (Eq)
+type InputPosition = (Int, Int)
+data PlayerInput = Exit | M | List | Move InputPosition deriving (Show, Eq)
 
-instance Show Board where
-  show (Board grid) = unlines ( map showRow grid)
+readInput :: String -> Maybe PlayerInput
+readInput input = rightToMaybe $ parse inputParser "" input
+
+inputParser :: Parser PlayerInput
+inputParser = 
+  parseExit 
+  <|> parseM 
+  <|> parseList 
+  <|> parseMove
+  where 
+    parseExit = parseToken "Exit" Exit
+    parseM = parseToken "M" M
+    parseList = parseToken "List" List
+    parseMove = do 
+      move <- between (symbol '(') (symbol ')') $ do
+        x <- read <$> integer
+        symbol ','
+        y <- read <$> integer
+        return (Move (x, y))
+      eof
+      return move
+
+    integer = lexeme (many1 digit)
+    parseToken text val= do 
+      lexeme (string text)
+      eof 
+      return val
+
+
+newtype Board = Board [[BoardMark]] deriving (Eq, Show)
+showBoard (Board grid) = unlines ( map showRow grid)
     where 
       showRow = unwords . map showMark
       showMark Nothing = "_"
-      showMark (Just a) = show a
+      showMark (Just a) = show a 
 
 data Game = Game 
   { playerTurn :: Player
@@ -29,7 +64,7 @@ data Game = Game
   , boardSize :: BoardSize
   , winningSeqLen :: Int
   , gameState :: GameState
-  }
+  } deriving Show
 
 emptyBoard :: BoardSize -> Board 
 emptyBoard (rows, cols) = Board $ replicate rows $ replicate cols Nothing
@@ -105,19 +140,28 @@ newGame boardSize winLen =
   , gameState = Running
   , board = emptyBoard boardSize
   , winningSeqLen = winLen
-  }
+  } 
 
 startGame :: Game -> IO ()
 startGame game = do 
+  putStrLn $ "Player " ++ show (playerTurn game) ++ "'s turn"
   line <- getLine
-  maybe retry next $ do
-    (i, j) <- readMaybe line
-    move i j game
+  newGame <- takeInput game (readInput line)
+  maybe retry next newGame
   where
+    takeInput game = maybe (return Nothing) (handleInput game)
     retry = putStrLn "Invalid move. Please input a valid move." >> startGame game
     next newGame = do
-      print (board newGame)
+      putStrLn $ showBoard (board newGame)
       case gameState newGame of
         Won a      -> putStrLn $ "Player " ++ show a ++ " won!"
         Stalemate  -> putStrLn "It's a draw!"
         Running    -> startGame newGame
+
+handleInput :: Game -> PlayerInput -> IO (Maybe Game)
+handleInput game Exit = exitSuccess
+handleInput game (Move (i, j)) = return $ move j i game
+handleInput game M = return $ Just game
+handleInput game List = do
+  putStrLn $ unlines $ map (showBoard . board) (moves game)
+  return $ Just game

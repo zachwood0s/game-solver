@@ -26,6 +26,8 @@ library:
   source-dirs: src
   dependencies:
     - lens
+    - parsec
+    - either
 
 executables:
   game-solver-exe:
