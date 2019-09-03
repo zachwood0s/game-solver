@@ -28,6 +28,7 @@ library:
     - lens
     - parsec
     - either
+    - containers
 
 executables:
   game-solver-exe:

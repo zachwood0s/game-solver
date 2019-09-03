@@ -1,11 +1,12 @@
 module TicTacToe (
-  newGame, startGame
+  newGame, startGame, evaluateSeq, Player(..), BoardMark, buildTree, board, showBoard, minimax
 ) where
 
 import Control.Lens (set, ix)
-import Data.Maybe (isNothing, catMaybes, fromMaybe)
+import Data.Maybe (isNothing, mapMaybe, fromMaybe, catMaybes)
 import Data.Either 
 import Data.Either.Combinators
+import Data.Tree
 import Utils
 import Data.Function
 import Text.Read (readMaybe)
@@ -65,6 +66,8 @@ data Game = Game
   , winningSeqLen :: Int
   , gameState :: GameState
   } deriving Show
+
+type DecisionNode = (InputPosition, Game)
 
 emptyBoard :: BoardSize -> Board 
 emptyBoard (rows, cols) = Board $ replicate rows $ replicate cols Nothing
@@ -128,9 +131,13 @@ move x y (Game player (Board board) boardSize@(rows, cols) winLen Running)
     validMove = onBoard `fAnd2` isEmpty
 
 
-moves :: Game -> [Game]
+moves :: Game -> [DecisionNode]
 moves game@(Game _ _ (rows, cols) _ _) = 
-  catMaybes [move x y game | x <- [0..rows-1], y <- [0..cols-1]]
+  mapMaybe shouldInclude [getMove x y | x <- [0..rows-1], y <- [0..cols-1]]
+  where 
+    makeMove x y m = ((x, y), m)
+    getMove x y = makeMove x y (move x y game)
+    shouldInclude ((x, y), m) = fmap (makeMove x y) m
 
 newGame :: BoardSize -> Int -> Game
 newGame boardSize winLen = 
@@ -161,7 +168,52 @@ startGame game = do
 handleInput :: Game -> PlayerInput -> IO (Maybe Game)
 handleInput game Exit = exitSuccess
 handleInput game (Move (i, j)) = return $ move j i game
-handleInput game M = return $ Just game
-handleInput game List = do
-  putStrLn $ unlines $ map (showBoard . board) (moves game)
+handleInput game M = do
+  print $ minimax (playerTurn game) (buildTree (-1) game) 
   return $ Just game
+
+handleInput game List = do
+  putStrLn $ unlines $ map (\(pos, g) -> show pos) (moves game)
+  return $ Just game
+
+
+-- Solvers
+
+evaluateScore :: Game -> Int
+evaluateScore (Game _ board _ winLen _) = 
+  sum $ map evaluateSeq (getSequences board winLen)
+
+
+-- Evaluation Huristic
+-- 1, 10, 100 for every one in a row of the same piece
+evaluateSeq :: [BoardMark] -> Int
+evaluateSeq seq = 
+  let 
+    allMarks = catMaybes seq -- Get rid of empty squares
+    count = length allMarks 
+  in 
+    if all (== X) allMarks then 10^count
+    else if all (== O) allMarks then -(10^count)
+    else 0
+
+
+buildTree :: Int -> Game -> Tree DecisionNode
+buildTree depth g = buildTree' depth ((-1, -1), g)
+  where 
+    buildTree' :: Int -> DecisionNode -> Tree DecisionNode
+    buildTree' depth node@(_, game) =
+      let 
+        leaves = 
+          if depth /= 0 then 
+            map (buildTree' (depth - 1)) (moves game)
+          else 
+            [] 
+      in 
+        Node node leaves
+
+
+minimax :: Player -> Tree DecisionNode -> Int 
+minimax _ (Node (_, g) []) = evaluateScore g
+minimax X (Node _ ts) = maximum (map (minimax O) ts)
+minimax O (Node _ ts) = minimum (map (minimax X) ts)
+
