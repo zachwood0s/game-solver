@@ -201,15 +201,9 @@ buildTree :: Int -> Game -> Tree DecisionNode
 buildTree depth g = buildTree' depth ((-1, -1), g)
   where 
     buildTree' :: Int -> DecisionNode -> Tree DecisionNode
-    buildTree' depth node@(_, game) =
-      let 
-        leaves = 
-          if depth /= 0 then 
-            map (buildTree' (depth - 1)) (moves game)
-          else 
-            [] 
-      in 
-        Node node leaves
+    buildTree' depth node@(_, game) = Node node (getLeaves depth game)
+    getLeaves 0 game = []
+    getLeaves _ game = map (buildTree' (depth - 1)) (moves game)
 
 
 minimax :: Player -> Tree DecisionNode -> Int 
