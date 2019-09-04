@@ -7,6 +7,8 @@ import Data.Maybe (isNothing, mapMaybe, fromMaybe, catMaybes)
 import Data.Either 
 import Data.Either.Combinators
 import Data.Tree
+import Data.List
+import Data.Ord
 import Utils
 import Data.Function
 import Text.Read (readMaybe)
@@ -21,6 +23,7 @@ type BoardMark = Maybe Player
 type BoardSize = (Int, Int)
 
 type InputPosition = (Int, Int)
+invalidPosition = (-1, -1)
 data PlayerInput = Exit | M | List | Move InputPosition deriving (Show, Eq)
 
 readInput :: String -> Maybe PlayerInput
@@ -115,7 +118,7 @@ move x y (Game _ _ _ _ Stalemate) = Nothing
 move x y (Game _ _ _ _ (Won _)) = Nothing
 move x y (Game player (Board board) boardSize@(rows, cols) winLen Running) 
   | validMove x y = 
-      let newBoard = Board $ set (ix x . ix y) (Just player) board 
+      let newBoard = Board $ set (ix y . ix x) (Just player) board 
       in
         Just Game 
           { playerTurn = nextPlayer player
@@ -127,11 +130,13 @@ move x y (Game player (Board board) boardSize@(rows, cols) winLen Running)
   | otherwise = Nothing 
   where 
     onBoard x y = inrange (0, rows - 1) x && inrange (0, cols - 1) y
-    isEmpty x y = isNothing (board !! x !! y)
+    isEmpty x y = isNothing (board !! y !! x)
     validMove = onBoard `fAnd2` isEmpty
 
 
 moves :: Game -> [DecisionNode]
+moves (Game _ _ _ _ (Won _)) = []
+moves (Game _ _ _ _ Stalemate) = []
 moves game@(Game _ _ (rows, cols) _ _) = 
   mapMaybe shouldInclude [getMove x y | x <- [0..rows-1], y <- [0..cols-1]]
   where 
@@ -167,14 +172,18 @@ startGame game = do
 
 handleInput :: Game -> PlayerInput -> IO (Maybe Game)
 handleInput game Exit = exitSuccess
-handleInput game (Move (i, j)) = return $ move j i game
+handleInput game (Move (i, j)) = return $ move i j game
 handleInput game M = do
-  print $ minimax (playerTurn game) (buildTree (-1) game) 
+  putStrLn $ drawTree $ show . fst <$> buildTree (-1) game
+  -- putStrLn $ drawTree $ show <$> minimax (playerTurn game) (buildTree (-1) game) 
   return $ Just game
 
 handleInput game List = do
-  putStrLn $ unlines $ map (\(pos, g) -> show pos) (moves game)
+  putStrLn $ unlines $ map toString options
   return $ Just game
+  where 
+    (Node _ options) = minimax (playerTurn game) (buildTree (-1) game)
+    toString (Node (p, s) _) = show p ++ " - " ++ show s
 
 
 -- Solvers
@@ -193,21 +202,52 @@ evaluateSeq seq =
     count = length allMarks 
   in 
     if all (== X) allMarks then 10^count
-    else if all (== O) allMarks then -(10^count)
+    else if all(== O) allMarks then -(10^count)
     else 0
 
 
 buildTree :: Int -> Game -> Tree DecisionNode
-buildTree depth g = buildTree' depth ((-1, -1), g)
+buildTree depth g = buildTree' depth (invalidPosition, g)
   where 
     buildTree' :: Int -> DecisionNode -> Tree DecisionNode
-    buildTree' depth node@(_, game) = Node node (getLeaves depth game)
+    buildTree' depth' node@(_, game) = Node node (getLeaves depth' game)
     getLeaves 0 game = []
-    getLeaves _ game = map (buildTree' (depth - 1)) (moves game)
+    getLeaves depth' game = map (buildTree' (depth' - 1)) (moves game)
 
+minimax :: Player -> Tree DecisionNode -> Tree (InputPosition, Int)
+minimax _ (Node (p, g) []) = Node (p, evaluateScore g) []
+minimax t (Node (p, g) ts) 
+  | X <- t = Node (p, minMaxScore maximumBy) children
+  | O <- t = Node (p, minMaxScore minimumBy) children
+  where 
+    nextT = nextPlayer t
+    children = map (minimax nextT) ts
+    getScore (Node (_, score) _) = score
+    minMaxScore comp = getScore $ comp (comparing getScore) children
 
-minimax :: Player -> Tree DecisionNode -> Int 
-minimax _ (Node (_, g) []) = evaluateScore g
-minimax X (Node _ ts) = maximum (map (minimax O) ts)
-minimax O (Node _ ts) = minimum (map (minimax X) ts)
+{- 
+minimax :: Player -> Tree DecisionNode -> (InputPosition, Int)
+minimax _ (Node (p, g) []) = (p, evaluateScore g)
+minimax t (Node (p, g) ts) 
+  | X <- t = makeResult p (minimax' maximumBy)
+  | O <- t = makeResult p (minimax' minimumBy)
+  where 
+    getScore (p, score) = score
+    nextT = nextPlayer t
+    makeResult (-1, -1) result = result
+    makeResult p (_, score) = (p, score)
+    minimax' minMax = 
+      minMax (comparing getScore) $ map (minimax nextT) ts
 
+-}
+
+{- 
+minimax :: Int -> Int -> Player -> Tree DecisionNode -> Int 
+minimax a b _ (Node (_, g) []) = evaluateScore g
+minimax a b X (Node _ ts) = maximum a b (map (minimax O) ts)
+  where 
+    minimax' a b ts =
+      let 
+        values = maximum a b (map (minimax a b O) ts)
+minimax a b O (Node _ ts) = minimum a b (map (minimax X) ts)
+-}
