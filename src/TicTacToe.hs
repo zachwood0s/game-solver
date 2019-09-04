@@ -19,41 +19,12 @@ import Text.ParserCombinators.Parsec
 
 data Player = O | X deriving (Show, Eq)
 data GameState = Won Player | Stalemate | Running deriving (Show, Eq)
-type BoardMark = Maybe Player
-type BoardSize = (Int, Int)
-
-type InputPosition = (Int, Int)
-invalidPosition = (-1, -1)
 data PlayerInput = Exit | M | List | Move InputPosition deriving (Show, Eq)
 
-readInput :: String -> Maybe PlayerInput
-readInput input = rightToMaybe $ parse inputParser "" input
-
-inputParser :: Parser PlayerInput
-inputParser = 
-  parseExit 
-  <|> parseM 
-  <|> parseList 
-  <|> parseMove
-  where 
-    parseExit = parseToken "Exit" Exit
-    parseM = parseToken "M" M
-    parseList = parseToken "List" List
-    parseMove = do 
-      move <- between (symbol '(') (symbol ')') $ do
-        x <- read <$> integer
-        symbol ','
-        y <- read <$> integer
-        return (Move (x, y))
-      eof
-      return move
-
-    integer = lexeme (many1 digit)
-    parseToken text val= do 
-      lexeme (string text)
-      eof 
-      return val
-
+type BoardMark = Maybe Player
+type BoardSize = (Int, Int)
+type InputPosition = (Int, Int)
+type DecisionNode = (InputPosition, Game)
 
 newtype Board = Board [[BoardMark]] deriving (Eq, Show)
 showBoard (Board grid) = unlines ( map showRow grid)
@@ -70,14 +41,11 @@ data Game = Game
   , gameState :: GameState
   } deriving Show
 
-type DecisionNode = (InputPosition, Game)
+invalidPosition = (-1, -1)
 
-emptyBoard :: BoardSize -> Board 
-emptyBoard (rows, cols) = Board $ replicate rows $ replicate cols Nothing
-
-nextPlayer :: Player -> Player
-nextPlayer X = O
-nextPlayer O = X 
+{------------------
+      Helpers
+------------------}
 
 chop :: Int -> [a] -> [[a]]
 chop k xs 
@@ -101,6 +69,17 @@ getSequences (Board board) winLen =
     cols = concatMap (chop winLen) $ transpose board
     fdiag = concatMap (chop winLen) $ diagonals board
     bdiag = concatMap (chop winLen) $ diagonals (map reverse board)
+
+{------------------
+  State Handling
+------------------}
+
+emptyBoard :: BoardSize -> Board 
+emptyBoard (rows, cols) = Board $ replicate rows $ replicate cols Nothing
+
+nextPlayer :: Player -> Player
+nextPlayer X = O
+nextPlayer O = X 
 
 getGameState :: Board -> Int -> GameState
 getGameState board@(Board markings) winLen 
@@ -154,6 +133,10 @@ newGame boardSize winLen =
   , winningSeqLen = winLen
   } 
 
+{------------------
+  Input Handling
+------------------}
+
 startGame :: Game -> IO ()
 startGame game = do 
   putStrLn $ "Player " ++ show (playerTurn game) ++ "'s turn"
@@ -173,10 +156,18 @@ startGame game = do
 handleInput :: Game -> PlayerInput -> IO (Maybe Game)
 handleInput game Exit = exitSuccess
 handleInput game (Move (i, j)) = return $ move i j game
-handleInput game M = do
-  putStrLn $ drawTree $ show . fst <$> buildTree (-1) game
-  -- putStrLn $ drawTree $ show <$> minimax (playerTurn game) (buildTree (-1) game) 
-  return $ Just game
+handleInput game M = 
+  let 
+    moveLevels = levels $ minimax (playerTurn game) (buildTree (-1) game)
+    allMoves = getAllMoves moveLevels
+    (x, y) = fst $ getOptimalMove (playerTurn game) allMoves
+  in
+    return $ move x y game
+  where
+    getAllMoves (_ : xs : _) = xs
+    getAllMoves _ = []
+    getOptimalMove X nodes = maximumBy (comparing snd) nodes
+    getOptimalMove O nodes = minimumBy (comparing snd) nodes
 
 handleInput game List = do
   putStrLn $ unlines $ map toString options
@@ -185,13 +176,39 @@ handleInput game List = do
     (Node _ options) = minimax (playerTurn game) (buildTree (-1) game)
     toString (Node (p, s) _) = show p ++ " - " ++ show s
 
+readInput :: String -> Maybe PlayerInput
+readInput input = rightToMaybe $ parse inputParser "" input
+
+inputParser :: Parser PlayerInput
+inputParser = 
+  parseExit 
+  <|> parseM 
+  <|> parseList 
+  <|> parseMove
+  where 
+    parseExit = parseToken "Exit" Exit
+    parseM = parseToken "M" M
+    parseList = parseToken "List" List
+    parseMove = do 
+      move <- between (symbol '(') (symbol ')') $ do
+        x <- read <$> integer
+        symbol ','
+        y <- read <$> integer
+        return (Move (x, y))
+      eof
+      return move
+
+    integer = lexeme (many1 digit)
+    parseToken text val= do 
+      lexeme (string text)
+      eof 
+      return val
 
 -- Solvers
 
 evaluateScore :: Game -> Int
 evaluateScore (Game _ board _ winLen _) = 
   sum $ map evaluateSeq (getSequences board winLen)
-
 
 -- Evaluation Huristic
 -- 1, 10, 100 for every one in a row of the same piece
@@ -204,7 +221,6 @@ evaluateSeq seq =
     if all (== X) allMarks then 10^count
     else if all(== O) allMarks then -(10^count)
     else 0
-
 
 buildTree :: Int -> Game -> Tree DecisionNode
 buildTree depth g = buildTree' depth (invalidPosition, g)
