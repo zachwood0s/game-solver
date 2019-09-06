@@ -1,5 +1,5 @@
 module TicTacToe (
-  newGame, startGame, evaluateSeq, Player(..), BoardMark, buildTree, board, showBoard, minimax
+  newGame, startGame, evaluateSeq, Player(..), BoardMark, buildTree, board, showBoard, minimax, minimaxAB
 ) where
 
 import Control.Lens (set, ix)
@@ -8,6 +8,7 @@ import Data.Either
 import Data.Either.Combinators
 import Data.Tree
 import Data.List
+import Debug.Trace
 import Data.Ord
 import Utils
 import Data.Function
@@ -15,6 +16,7 @@ import Text.Read (readMaybe)
 import Control.Monad
 import Data.List (tails, transpose)
 import System.Exit
+import ExtendedNum (ExtendedNum(..), extendedNum2Num)
 import Text.ParserCombinators.Parsec
 
 data Player = O | X deriving (Show, Eq)
@@ -173,7 +175,7 @@ handleInput game List = do
   putStrLn $ unlines $ map toString options
   return $ Just game
   where 
-    (Node _ options) = minimax (playerTurn game) (buildTree (-1) game)
+    (Node _ options) = minimaxAB (playerTurn game) NegInf PosInf (buildTree (-1) game)
     toString (Node (p, s) _) = show p ++ " - " ++ show s
 
 readInput :: String -> Maybe PlayerInput
@@ -241,6 +243,98 @@ minimax t (Node (p, g) ts)
     getScore (Node (_, score) _) = score
     minMaxScore comp = getScore $ comp (comparing getScore) children
 
+
+minimaxAB :: Player -> ExtendedNum Int -> ExtendedNum Int -> Tree DecisionNode -> Tree (InputPosition, Int)
+minimaxAB _ _ _ (Node (p, g) []) = Node (p, evaluateScore g) []
+minimaxAB t alpha beta node = minimaxABHelper node t alpha beta
+  {- 
+  where 
+    minimaxAB' :: 
+    minimaxAB' (x : xs) t alpha' beta' =
+      let
+        values = scanl doMin (x, PosInf, beta') xs
+        values_ = traceShow (map getBeta values) values
+
+
+
+        -- ((node, value, beta), (node, value, beta), ..)
+        -- newValue = min value $ minimaxAB (nextPlayer t) alpha beta node
+        -- newBeta = min value beta
+        -- return (node, newValue, newBeta)
+      in
+        extendedNum2Num $ minimum (map getValue values_)
+      where
+        getBeta (_, _, b) = b
+        getValue (_, v, _) = v
+        getScore (Node (_, s) _) = s
+        doMin :: (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int) -> Tree DecisionNode -> (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int)
+        doMin = traceShow "doMin" $ doCall min (\n b -> minimaxAB (nextPlayer t) alpha' b n)
+        doMax :: (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int) -> Tree DecisionNode -> (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int)
+        doMax = doCall max (\n a -> minimaxAB (nextPlayer t) a beta' n)
+        doCall :: (ExtendedNum Int -> ExtendedNum Int -> ExtendedNum Int) 
+               -> (Tree DecisionNode -> ExtendedNum Int -> Tree (InputPosition, Int)) 
+               -> (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int) 
+               -> Tree DecisionNode
+               -> (Tree DecisionNode, ExtendedNum Int, ExtendedNum Int)
+        doCall comp call (_, v, aOrB) n = 
+          let
+            newValue = Only (getScore $ call n aOrB)
+            maxMinValue = comp v newValue
+            newAlphaBeta = comp maxMinValue aOrB
+          in
+            (n, newValue, newAlphaBeta)
+-}
+
+{-
+minimaxABHelper :: Tree DecisionNode -> Player -> ExtendedNum Int -> ExtendedNum Int -> Tree (InputPosition, Int)
+minimaxABHelper (Node (p, g) (x : xs)) t alpha beta =
+  let
+    first = case t of
+      X -> alphaCall x beta
+      O -> betaCall x alpha
+    values = case t of
+      X -> takeWhile ((< beta) . getAlphaBeta) $ scanl doMax (first, NegInf, alpha) xs
+      O -> takeWhile ((> alpha) . getAlphaBeta) $ scanl doMin (first, PosInf, beta) xs
+    bestValue = case t of
+      X -> maximum $ map getValue values
+      O -> minimum $ map getValue values
+    bestValue_ = traceShow (show p ++ "best value for " ++ show t ++ " is " ++ show bestValue ++ show values) bestValue
+  in
+    Node (p, extendedNum2Num bestValue_) $ map getNode values
+  {-`
+  let
+    values = scanl doMin (x, PosInf, beta') xs
+    values_ = traceShow (map getBeta values) values
+
+
+
+    -- ((node, value, beta), (node, value, beta), ..)
+    -- newValue = min value $ minimaxAB (nextPlayer t) alpha beta node
+    -- newBeta = min value beta
+    -- return (node, newValue, newBeta)
+  in
+    extendedNum2Num $ minimum (map getValue values_)
+  -}
+  where
+    getNode (n, _, _) = n
+    getAlphaBeta (_, _, b) = b
+    getValue (_, v, _) = v
+    getScore (Node (_, s) _) = s
+    betaCall n b = minimaxAB (nextPlayer t) alpha b n
+    alphaCall n a = minimaxAB (nextPlayer t) a beta n
+    doMin = doCall min betaCall
+    doMax = doCall max alphaCall
+    doCall comparison call (_, accVal, aOrB) n = 
+      let
+        result = call n aOrB
+        newValue = Only $ getScore result
+        maxMinValue = comparison accVal newValue
+        newAlphaBeta = comparison maxMinValue aOrB
+      in
+        (result, newValue, newAlphaBeta)
+
+
+
 {- 
 minimax :: Player -> Tree DecisionNode -> (InputPosition, Int)
 minimax _ (Node (p, g) []) = (p, evaluateScore g)
@@ -267,3 +361,5 @@ minimax a b X (Node _ ts) = maximum a b (map (minimax O) ts)
         values = maximum a b (map (minimax a b O) ts)
 minimax a b O (Node _ ts) = minimum a b (map (minimax X) ts)
 -}
+-}
+
