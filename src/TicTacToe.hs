@@ -55,6 +55,7 @@ chop k xs
   | otherwise = chop' : chop k (tail xs)
   where chop' = take k xs
 
+
 diagonal :: [[a]] -> [a]
 diagonal [] = []
 diagonal ((x:_):rows) = x : diagonal (map tail rows)
@@ -160,7 +161,7 @@ handleInput game Exit = exitSuccess
 handleInput game (Move (i, j)) = return $ move i j game
 handleInput game M = 
   let 
-    moveLevels = levels $ minimax (playerTurn game) (buildTree (-1) game)
+    moveLevels = levels $ minimaxAB (playerTurn game) (buildTree (-1) game)
     allMoves = getAllMoves moveLevels
     (x, y) = fst $ getOptimalMove (playerTurn game) allMoves
   in
@@ -168,14 +169,15 @@ handleInput game M =
   where
     getAllMoves (_ : xs : _) = xs
     getAllMoves _ = []
-    getOptimalMove X nodes = maximumBy (comparing snd) nodes
-    getOptimalMove O nodes = minimumBy (comparing snd) nodes
+    getOptimalMove X nodes = maximumBy (comparing snd) (reverse nodes)
+    getOptimalMove O nodes = minimumBy (comparing snd) (reverse nodes)
 
 handleInput game List = do
+  --putStrLn $ drawTree $ fmap show node
   putStrLn $ unlines $ map toString options
   return $ Just game
   where 
-    (Node _ options) = minimaxAB (playerTurn game) NegInf PosInf (buildTree (-1) game)
+    node@(Node _ options) = minimaxAB (playerTurn game) (buildTree (-1) game)
     toString (Node (p, s) _) = show p ++ " - " ++ show s
 
 readInput :: String -> Maybe PlayerInput
@@ -244,10 +246,10 @@ minimax t (Node (p, g) ts)
     minMaxScore comp = getScore $ comp (comparing getScore) children
 
 
+  {- 
 minimaxAB :: Player -> ExtendedNum Int -> ExtendedNum Int -> Tree DecisionNode -> Tree (InputPosition, Int)
 minimaxAB _ _ _ (Node (p, g) []) = Node (p, evaluateScore g) []
 minimaxAB t alpha beta node = minimaxABHelper node t alpha beta
-  {- 
   where 
     minimaxAB' :: 
     minimaxAB' (x : xs) t alpha' beta' =
@@ -284,6 +286,7 @@ minimaxAB t alpha beta node = minimaxABHelper node t alpha beta
           in
             (n, newValue, newAlphaBeta)
 -}
+
 
 {-
 minimaxABHelper :: Tree DecisionNode -> Player -> ExtendedNum Int -> ExtendedNum Int -> Tree (InputPosition, Int)
@@ -362,4 +365,42 @@ minimax a b X (Node _ ts) = maximum a b (map (minimax O) ts)
 minimax a b O (Node _ ts) = minimum a b (map (minimax X) ts)
 -}
 -}
+minimaxAB :: Player -> Tree DecisionNode -> Tree (InputPosition, Int)
+minimaxAB t = minimaxAB' t NegInf PosInf
+minimaxAB' :: Player -> ExtendedNum Int -> ExtendedNum Int -> Tree DecisionNode -> Tree (InputPosition, Int)
+minimaxAB' _ _ _ (Node (p, g) []) = Node (p, evaluateScore g) []
+minimaxAB' t a b (Node (p, g) ts) 
+  | X <- t = Node (p, minMaxScore maximumBy) children
+  | O <- t = Node (p, minMaxScore minimumBy) children
+  where
+    nextT =  t
+    startingValue X = NegInf
+    startingValue O = PosInf
+    children = minimaxHelper ts nextT a b (startingValue nextT)
+    getScore (Node (_, score) _) = score
+    minMaxScore comp = getScore $ comp (comparing getScore) children
 
+minimaxHelper :: [Tree DecisionNode] -> Player -> ExtendedNum Int -> ExtendedNum Int -> ExtendedNum Int -> [Tree (InputPosition, Int)]
+minimaxHelper [] _ _ _ _ = []
+minimaxHelper (x : xs) t alpha beta value
+  | alpha >= beta = []
+  | otherwise =
+    let 
+      newNode@(Node (_, score) _) = minimaxAB' (nextPlayer t) alpha beta x
+      newValue = comp t value (Only score)
+      newA = newAlpha t alpha newValue
+      newB = newBeta t beta newValue
+    in
+      newNode : minimaxHelper xs t newA newB newValue
+  where 
+    comp X = max
+    comp O = min
+    newAlpha X alpha v = max alpha v
+    newAlpha O alpha _ = alpha
+    newBeta X beta _ = beta
+    newBeta O beta v = min beta v
+      
+  
+trc :: (Show a) => a -> a
+trc = traceThis "Trace: "
+traceThis str x = trace (show str ++ show x) x
