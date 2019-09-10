@@ -50,6 +50,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - containers
     - game-solver
     - tasty
     - tasty-hunit

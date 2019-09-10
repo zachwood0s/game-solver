@@ -1,48 +1,85 @@
-data Solver = Solver 
+{-# LANGUAGE RecordWildCards #-}
+
+module Solver 
+  ( minimax, minimaxAB 
+  , Solver(..) 
+  ) 
+where
+import Data.List
+import Data.Ord
+import Data.Tree
+import Debug.Trace
+import ExtendedNum (ExtendedNum(..)) 
+
+data ABScore a = Estimate a | Exact a deriving (Eq, Show)
+
+instance (Num a, Eq a) => Num (ABScore a) where
+  Estimate a + Estimate b = Estimate (a + b)
+  Estimate a + Exact b = Estimate (a + b)
+  Exact a + Exact b = Exact (a + b)
+  x + y = y + x
+  x - y = x + Exact (-1) * y
+
+  Exact a * Exact b = Exact (a * b)
+  Estimate a * Estimate b = Estimate (a * b)
+  Estimate a * Exact b = Estimate (a * b)
+  x * y = y * x
+
+  abs (Estimate a) = Estimate (abs a)
+  abs (Exact a) = Exact (abs a)
+  signum (Exact a) = Exact (signum a)
+  signum (Estimate a) = Estimate (signum a)
+
+  fromInteger a = Exact $ fromInteger a
+
+
+data Solver a b = Solver 
   { getScore :: b -> Int
-  , evaluateScore :: g -> Int
-  , buildNode :: a -> Int -> b
+  , evaluateScore :: a -> Int
+  , buildNode :: Int -> a -> b
   }
 
-minimax :: Solver -> Bool -> Tree a -> Tree b
-minimax Solver{buildNode=build} _ (Node val []) = Node (build val $ evaluateScore g) []
-minimax Solver{buildNode=build} maximizingPlayer (Node val ts) 
-  | maximizingPlayer = Node (build val $ minMaxScore maximumBy) children
-  | not maximizingPlayer = Node (build val $ minMaxScore minimumBy) children
+minimax :: Solver a b -> Bool -> Tree a -> Tree b
+minimax Solver{..} _ (Node val []) =  Node (buildNode (evaluateScore val) val) []
+minimax s@Solver{..} maximizingPlayer (Node val ts) 
+  | maximizingPlayer = Node (buildNode (getNewScore maximum) val) children
+  | not maximizingPlayer = Node (buildNode (getNewScore minimum) val) children
   where 
-    nextT = nextPlayer t
-    children = map (minimax (not maximizingPlayer)) ts
-    getScore (Node (_, score) _) = score
-    minMaxScore comp = getScore $ comp (comparing getScore) children
+    children = map (minimax s (not maximizingPlayer)) ts
+    getNewScore :: ([Int] -> Int) -> Int
+    getNewScore comp = comp $ map (getScore . rootLabel) children
 
-minimaxAB :: Solver -> Bool -> Tree a -> Tree b
-minimaxAB t = minimaxAB' t NegInf PosInf
 
-minimaxAB' :: Bool -> ExtendedNum Int -> ExtendedNum Int -> Tree a -> Tree b
-minimaxAB' _ _ _ (Node a []) = Node (p, evaluateScore g) []
-minimaxAB' maximizingPlayer a b (Node (p, g) ts) 
-  | True <- maximizingPlayer = Node (p, minMaxScore maximumBy) children
-  | False <- maximizingPlayer = Node (p, minMaxScore minimumBy) children
+minimaxAB :: Solver a b -> Bool -> Tree a -> Tree b 
+minimaxAB s maximizingPlayer = minimaxAB' s maximizingPlayer NegInf  PosInf 
+
+minimaxAB' :: Solver a b -> Bool -> ExtendedNum Int -> ExtendedNum Int -> Tree a -> Tree b
+minimaxAB' Solver{..} _ _ _ (Node val []) = Node (buildNode (evaluateScore val) val) []
+minimaxAB' s@Solver{..} maximizingPlayer a b (Node val ts) 
+  | maximizingPlayer = Node (buildNode (minMaxScore maximum) val) children
+  | not maximizingPlayer = Node (buildNode (minMaxScore minimum) val) children
   where
-    startingValue = if maximizingPlayer then NegInf else PosInf
-    children = minimaxHelper ts nextT a b startingValue
-    getScore (Node (_, score) _) = score
-    minMaxScore comp = getScore $ comp (comparing getScore) children
+    startingValue = if maximizingPlayer then NegInf else PosInf 
+    children = minimaxHelper s ts maximizingPlayer a b startingValue
+    minMaxScore comp = comp $ map (getScore . rootLabel ) children
 
-minimaxHelper :: [Tree a] -> Bool -> ExtendedNum Int -> ExtendedNum Int -> ExtendedNum Int -> [Tree b]
-minimaxHelper [] _ _ _ _ = []
-minimaxHelper (x : xs) maximizingPlayer alpha beta value
+minimaxHelper :: Solver a b -> [Tree a] -> Bool -> ExtendedNum Int -> ExtendedNum Int -> ExtendedNum Int -> [Tree b]
+minimaxHelper _ [] _ _ _ _ = []
+minimaxHelper s@Solver{..} (x : xs) maximizingPlayer alpha beta value
   | alpha >= beta = []
   | otherwise =
     let 
-      newNode@(Node (_, score) _) = minimaxAB' (not maximizingPlayer) alpha beta x
-      newValue = comp value (Only score)
-      newA = newAlpha maximizingPlayer alpha newValue
-      newB = newBeta maximizingPlayer beta newValue
-    in
-      newNode : minimaxHelper xs t newA newB newValue
-  where 
-    comp = if maximizingPlayer then max else min
-    newAlpha alpha v = if maximizingPlayer then max alpha v else alpha
-    newBeta beta v = if maximizingPlayer then beta else min beta v
-
+      comp = if maximizingPlayer then max else min 
+      newNode = minimaxAB' s (not maximizingPlayer) alpha beta x
+      newValue = comp value (Only $ (getScore . rootLabel) newNode)
+      newA = newAlpha alpha newValue
+      newB = newBeta beta newValue
+    in 
+      newNode : minimaxHelper s xs maximizingPlayer newA newB newValue
+  where
+    newAlpha alpha v = 
+      if maximizingPlayer then max alpha v
+      else alpha
+    newBeta beta v = 
+      if maximizingPlayer then beta 
+      else min beta v
