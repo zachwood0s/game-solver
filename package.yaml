@@ -29,6 +29,9 @@ library:
     - parsec
     - either
     - containers
+  ghc-options:
+    - -Wall
+    - -Werror
 
 executables:
   game-solver-exe:
