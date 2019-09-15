@@ -1,16 +1,18 @@
 module Model 
-  ( Model(..), CurrentOptions
+  ( Model(..), Options(..)
   ) 
 where
 
 import Miso.String (MisoString)
 
-import TicTacToe.Model (TicTacToeOptions)
+import qualified TicTacToe.Model (TicTacToeOptions)
 
 data Model = Model
   { string :: MisoString
+  , options :: Options
   }
-  deriving (Show, Eq)
+  deriving Eq
 
 
-type CurrentOptions = TicTacToeOptions
+data Options = TicTacToeOptions TicTacToe.Model.TicTacToeOptions
+  deriving Eq

@@ -31,4 +31,4 @@ data TicTacToeOptions = TicTacToeOptions
   { selectedBoardSize :: BoardSize 
   , selectedWinningSeqLen :: Int
   , solverOptions :: SolverOptions DecisionNode (InputPosition, ABScore Int)
-  }
+  } deriving Eq
