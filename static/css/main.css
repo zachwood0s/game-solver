@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css?family=Oswald:700|Roboto:300,400&display=swap');
+
+:root{
+  --black: #333433;
+  --red: #F25F5C;
+  --yellow: #FFE066;
+  --blue: #247BA0;
+  --green: #70C1B3;
+  --grey: #9fa09f;
+  --white: #f9f9f9;
+
+  --sidebar-width: 240px;
+  --sidebar-background: var(--black);
+  --sidebar-foreground: var(--grey);
+
+  --sidebar-newGame-background: var(--red);
+  --sidebar-newGame-foreground: var(--white);
+  --sidebar-newGame-height: 90px;
+  --sidebar-newGame-bottom-margin: 40px;
+
+  --sidebar-section-padding: 20px 25px;
+  --sidebar-section-h1-size: 15px;
+  --sidebar-section-foreground: var(--grey);
+}
+
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+
+body {
+  background: var(--white);
+  font-family: 'Roboto', sans-serif;
+  /* font-family: 'IBM Plex Sans Condensed', sans-serif; */
+  margin:0;
+}
+
+h1, h2, h3, h4, h5, h6{
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: .05em;
+  font-weight:700;
+}
+
+
+
+/*******************
+      Sidebar 
+*******************/
+
+#sidebar{
+  background: var(--sidebar-background);
+  color: var(--sidebar-foreground);
+  width: var(--sidebar-width);
+  height:100%;
+  overflow:auto;
+  position:fixed;
+}
+
+#newGameButton{
+  background: var(--sidebar-newGame-background);
+  color: var(--sidebar-newGame-foreground);
+  height: var(--sidebar-newGame-height);
+  line-height: var(--sidebar-newGame-height);
+  margin-bottom: var(--sidebar-newGame-bottom-margin);
+
+  text-align: center;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-weight:bold;
+  cursor: pointer;
+  text-shadow: rgba(0,0,0,0.5) 0 0 2px;
+}
+
+#sidebar section{
+  padding:var(--sidebar-section-padding);
+  color: var(--sidebar-foreground);
+}
+
+#sidebar section h1{
+  font-size: var(--sidebar-section-h1-size);
+  text-transform: uppercase;
+}
+

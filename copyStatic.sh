@@ -1,0 +1,1 @@
+cp -RT ./static ./build/static

@@ -1,8 +1,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Solver 
-  ( minimax, minimaxAB 
-  , Solver(..), ABScore(..)
+module Solver.Solver 
+  ( solverList
+  , minimax, minimaxAB 
+  , SolverFunc, Solver(..), ABScore(..)
   ) 
 where
 import Data.Tree
@@ -45,6 +46,20 @@ data Solver a b = Solver
   , evaluateScore :: a -> Int
   , buildNode :: ABScore Int -> a -> b
   }
+
+type SolverFunc = Solver a b -> Bool -> Tree a -> Tree b
+
+data SolverOptions a b = SolverOptions
+  { selectedSolverFunc :: (String, SolverFunc a b)
+  , solverList :: [(String, SolverFunc a b)]
+  , searchDepth :: Int 
+  }
+
+solverList :: [(String, SolverFunc)]
+solverList = 
+  [ ("MiniMax", minimax)
+  , ("MiniMax + Alpha Beta", minimaxAB)
+  ]
 
 unwrapScore :: ABScore a -> a 
 unwrapScore (Estimate a) = a

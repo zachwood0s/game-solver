@@ -28,10 +28,15 @@ source-repository head
 library
   exposed-modules:
       ExtendedNum
-      Lib
-      Solver
-      TicTacToe
+      Solvers
+      Solvers.Minimax
+      Solvers.Types
+      TicTacToe.Model
       Utils
+      Model
+      Messages
+      View
+      Update
   other-modules:
       Paths_game_solver
   hs-source-dirs:
@@ -43,6 +48,7 @@ library
     , either
     , lens
     , parsec
+    , miso
   default-language: Haskell2010
 
 executable game-solver-exe
@@ -55,20 +61,5 @@ executable game-solver-exe
   build-depends:
       base >=4.7 && <5
     , game-solver
-  default-language: Haskell2010
-
-test-suite game-solver-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_game_solver
-  hs-source-dirs:
-      test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , containers
-    , game-solver
-    , tasty
-    , tasty-hunit
+    , miso
   default-language: Haskell2010
