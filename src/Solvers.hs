@@ -1,7 +1,19 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Solvers 
-  ( module Solvers.Minimax
-  , module Solvers.Types
+  ( solverMap
   ) where
 
+import Data.Map
+import Miso.String
+
 import Solvers.Minimax
-import Solvers.Types
+import Solvers.Model
+
+
+solverMap :: Map MisoString (SolverFunc a b)
+solverMap =
+  fromList 
+    [ ("Minimax", minimax)
+    , ("Minimax w/ Alpha Beta", minimaxAB)
+    ]

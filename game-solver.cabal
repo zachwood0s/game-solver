@@ -23,14 +23,15 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/game-solver
+  location: https://github.com/zachwood0s/game-solver
 
 library
   exposed-modules:
       ExtendedNum
       Solvers
       Solvers.Minimax
-      Solvers.Types
+      Solvers.Model
+      Solvers.View
       TicTacToe.Model
       Utils
       Model
@@ -41,7 +42,7 @@ library
       Paths_game_solver
   hs-source-dirs:
       src
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall 
   build-depends:
       base >=4.7 && <5
     , containers

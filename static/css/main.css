@@ -2,12 +2,17 @@
 
 :root{
   --black: #333433;
+  --blackish: #5f605f;
   --red: #F25F5C;
   --yellow: #FFE066;
   --blue: #247BA0;
   --green: #70C1B3;
   --grey: #9fa09f;
   --white: #f9f9f9;
+
+  --transition-time: .3s;
+  --default-font: 'Roboto', sans-serif;
+  --accent-font: 'Oswald', sans-serif;
 
   --sidebar-width: 240px;
   --sidebar-background: var(--black);
@@ -20,7 +25,11 @@
 
   --sidebar-section-padding: 20px 25px;
   --sidebar-section-h1-size: 15px;
+  --sidebar-section-h2-size: 20px;
+  --sidebar-section-h3-size: 12px;
   --sidebar-section-foreground: var(--grey);
+
+  --sidebar-dropdown-font-size: 13px;
 }
 
 
@@ -33,13 +42,13 @@
 
 body {
   background: var(--white);
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--default-font);
   /* font-family: 'IBM Plex Sans Condensed', sans-serif; */
   margin:0;
 }
 
 h1, h2, h3, h4, h5, h6{
-  font-family: 'Oswald', sans-serif;
+  font-family: var(--accent-font);
   letter-spacing: .05em;
   font-weight:700;
 }
@@ -84,3 +93,41 @@ h1, h2, h3, h4, h5, h6{
   text-transform: uppercase;
 }
 
+#sidebar section h2{
+  font-size: var(--sidebar-section-h2-size);
+  text-transform: capitalize;
+  font-weight: normal;
+  font-family: var(--default-font);
+}
+
+.dropDown{
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.dropDown h2, .dropDown h3{
+  margin:0;
+}
+
+.dropDown h3 {
+  font-size: var(--sidebar-section-h3-size);
+}
+
+.dropDown ul {
+  margin:0;
+  margin-top:3px;
+  list-style: none;
+  height: 0;
+  transition: height var(--transition-time);
+  font-size: var(--sidebar-dropdown-font-size);
+}
+
+.dropDown.open ul{
+  height:auto;
+  padding:2px;
+}
+
+.dropDown ul li {
+  background:var(--blackish);
+  padding:3px 0;
+}

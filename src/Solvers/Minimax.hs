@@ -5,7 +5,7 @@ module Solvers.Minimax
   ) where
 
 import Data.Tree
-import Solvers.Types 
+import Solvers.Model
 import ExtendedNum
 
 minimax :: Solver a b -> Bool -> Tree a -> Tree b

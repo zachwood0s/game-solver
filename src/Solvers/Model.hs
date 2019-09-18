@@ -1,10 +1,11 @@
-module Solvers.Types 
+module Solvers.Model 
   ( ABScore(..), unwrapScore
   , Solver(..)
-  , SolverFunc, SolverOptions(..)
+  , SolverFunc, Options(..), emptyOptions
   ) where
 
 import Data.Tree
+import Miso.String (MisoString)
 
 data ABScore a = Estimate a | Exact a deriving (Eq)
 
@@ -46,17 +47,19 @@ data Solver a b = Solver
 
 type SolverFunc a b = Solver a b -> Bool -> Tree a -> Tree b
 
-data SolverOptions a b = SolverOptions
-  { selectedSolverFunc :: (String, SolverFunc a b)
-  , solverList :: [(String, SolverFunc a b)]
+data Options = Options
+  { selectedSolverFunc :: MisoString
+  , solverList :: [MisoString]
   , searchDepth :: Int 
-  } 
+  } deriving Eq
 
-instance Eq (SolverOptions a b) where
-  (SolverOptions sel1 list1 depth1) == (SolverOptions sel2 list2 depth2) = 
-       depth1 == depth2 
-    && map fst list1 == map fst list2
-    && fst sel1 == fst sel2
+emptyOptions :: [MisoString] -> Options
+emptyOptions solverNames = 
+  Options 
+    { selectedSolverFunc = head solverNames 
+    , solverList = solverNames
+    , searchDepth = 1
+    }
 
 unwrapScore :: ABScore a -> a 
 unwrapScore (Estimate a) = a

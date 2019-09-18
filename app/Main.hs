@@ -9,13 +9,13 @@ import Miso.String (MisoString(..))
 import View (view)
 import Update (update)
 import Messages (Msg(..))
-import Model (Model(..))
+import Model (Model(..), emptyModel)
 
 main :: IO ()
 main = startApp App {..}
   where 
     initialAction = NoOp
-    model = Model{string = "Hello"}
+    model = emptyModel
     update = Update.update
     view = View.view
     events = defaultEvents

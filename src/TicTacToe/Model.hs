@@ -2,14 +2,12 @@ module TicTacToe.Model
   ( TicTacToeOptions(..), showBoard
   ) where
 
-import Solvers.Types
-
 data Player = O | X deriving (Show, Eq)
 data GameState = Won Player | Stalemate | Running deriving (Show, Eq)
 type BoardMark = Maybe Player
 type BoardSize = (Int, Int)
-type InputPosition = (Int, Int)
-type DecisionNode = (InputPosition, Game)
+--type InputPosition = (Int, Int)
+--type DecisionNode = (InputPosition, Game)
 
 newtype Board = Board [[BoardMark]] deriving (Eq, Show)
 showBoard :: Board -> String
@@ -30,5 +28,4 @@ data Game = Game
 data TicTacToeOptions = TicTacToeOptions
   { selectedBoardSize :: BoardSize 
   , selectedWinningSeqLen :: Int
-  , solverOptions :: SolverOptions DecisionNode (InputPosition, ABScore Int)
   } deriving Eq

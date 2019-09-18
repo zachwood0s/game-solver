@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module View 
   ( View.view 
@@ -9,14 +10,14 @@ import Miso
 
 import Messages
 import Model
+import qualified Solvers.View (viewOptions)
 
 view :: Model -> View Msg
-view Model{string=s} =
+view model =
   div_
     []
     [ staticCss
-    , sidebar
-    , text s 
+    , sidebar model
     ]
 
 staticCss :: View Msg
@@ -26,13 +27,13 @@ staticCss =
     , href_ "static/css/main.css"
     ]
 
-sidebar :: View Msg
-sidebar = 
+sidebar :: Model -> View Msg
+sidebar Model{..} = 
   div_ 
     [ id_ "sidebar" 
     ]
     [ newGameButton
-    , solverSection
+    , Solvers.View.viewOptions solverOptions
     ]
 
 newGameButton :: View Msg
@@ -41,9 +42,3 @@ newGameButton =
     [ id_ "newGameButton" ]
     [ text "New game" ]
 
-solverSection :: View Msg
-solverSection =
-  section_
-    []
-    [ h1_ [] [ text "Solver" ]
-    ]

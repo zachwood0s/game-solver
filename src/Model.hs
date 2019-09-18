@@ -1,18 +1,20 @@
 module Model 
-  ( Model(..), Options(..)
+  ( Model(..), emptyModel
   ) 
 where
 
-import Miso.String (MisoString)
+import Data.Map
 
-import qualified TicTacToe.Model (TicTacToeOptions)
+import qualified Solvers.Model
+import Solvers (solverMap)
 
 data Model = Model
-  { string :: MisoString
-  , options :: Options
+  { solverOptions :: Solvers.Model.Options
   }
   deriving Eq
 
-
-data Options = TicTacToeOptions TicTacToe.Model.TicTacToeOptions
-  deriving Eq
+emptyModel :: Model 
+emptyModel = 
+  Model 
+    { solverOptions = Solvers.Model.emptyOptions (keys solverMap)
+    }
