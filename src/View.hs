@@ -14,18 +14,25 @@ import qualified Solvers.View (viewOptions)
 
 view :: Model -> View Msg
 view model =
-  div_
-    []
-    [ staticCss
-    , sidebar model
-    ]
+  let 
+    body =
+      [ sidebar model 
+      ] ++ staticCss
+  in
+    div_ [] body
 
-staticCss :: View Msg
+
+staticCss :: [View Msg]
 staticCss = 
-  link_ 
+  [ link_ 
     [ rel_ "stylesheet"
     , href_ "static/css/main.css"
     ]
+  , link_
+    [ rel_ "stylesheet"
+    , href_ "static/css/fonts.css"
+    ]
+  ]
 
 sidebar :: Model -> View Msg
 sidebar Model{..} = 
@@ -33,7 +40,7 @@ sidebar Model{..} =
     [ id_ "sidebar" 
     ]
     [ newGameButton
-    , Solvers.View.viewOptions solverOptions
+    , SolverMessage <$> Solvers.View.viewOptions solverOptions
     ]
 
 newGameButton :: View Msg

@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Solvers.Model 
   ( ABScore(..), unwrapScore
   , Solver(..)
@@ -6,6 +8,7 @@ module Solvers.Model
 
 import Data.Tree
 import Miso.String (MisoString)
+import Shared.DropDown (Model(..))
 
 data ABScore a = Estimate a | Exact a deriving (Eq)
 
@@ -48,16 +51,19 @@ data Solver a b = Solver
 type SolverFunc a b = Solver a b -> Bool -> Tree a -> Tree b
 
 data Options = Options
-  { selectedSolverFunc :: MisoString
-  , solverList :: [MisoString]
+  { solverDropDown :: Shared.DropDown.Model
   , searchDepth :: Int 
   } deriving Eq
 
 emptyOptions :: [MisoString] -> Options
 emptyOptions solverNames = 
   Options 
-    { selectedSolverFunc = head solverNames 
-    , solverList = solverNames
+    { solverDropDown = Shared.DropDown.Model 
+      { title = "Algorithm"
+      , selected = head solverNames
+      , options = solverNames 
+      , expanded = False
+      }
     , searchDepth = 1
     }
 

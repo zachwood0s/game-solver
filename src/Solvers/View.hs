@@ -7,26 +7,16 @@ module Solvers.View
 
 import Miso
 
-import Messages
+import Solvers.Messages 
 import qualified Solvers.Model  
+import qualified Shared.DropDown (view)
 
 viewOptions :: Solvers.Model.Options -> View Msg
-viewOptions model = 
+viewOptions Solvers.Model.Options{..} = 
   section_
     [] 
     [ h1_ [] [ text "Solver" ]
-    , solverDropDown model
+    , SolverDropDownMsg <$> Shared.DropDown.view solverDropDown
     ]
-
-solverDropDown :: Solvers.Model.Options -> View Msg 
-solverDropDown Solvers.Model.Options{..} = 
-  div_ 
-    [ class_ "dropDown" ]
-    [ h2_ [] [ text "Algorithm" ]
-    , h3_ [] [ text selectedSolverFunc ]
-    , ul_ [] (map createListItem solverList)
-    ]
-  where
-    createListItem item = li_ [] [ text item ]
   
     

@@ -28,10 +28,13 @@ source-repository head
 library
   exposed-modules:
       ExtendedNum
+      Shared.DropDown
       Solvers
       Solvers.Minimax
       Solvers.Model
       Solvers.View
+      Solvers.Messages
+      Solvers.Update
       TicTacToe.Model
       Utils
       Model

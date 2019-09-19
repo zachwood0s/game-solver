@@ -10,7 +10,7 @@
   --grey: #9fa09f;
   --white: #f9f9f9;
 
-  --transition-time: .3s;
+  --transition-time: .2s;
   --default-font: 'Roboto', sans-serif;
   --accent-font: 'Oswald', sans-serif;
 
@@ -29,7 +29,7 @@
   --sidebar-section-h3-size: 12px;
   --sidebar-section-foreground: var(--grey);
 
-  --sidebar-dropdown-font-size: 13px;
+  --sidebar-dropdown-font-size: 14px;
 }
 
 
@@ -106,7 +106,31 @@ h1, h2, h3, h4, h5, h6{
 }
 
 .dropDown h2, .dropDown h3{
+  position: relative;
   margin:0;
+}
+
+.dropDown h2:before {
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\ea0a";
+  right:0;
+  font-size:15px;
+  position:absolute;
+  margin-top:calc((44px - 15px) / 2);
+}
+
+.dropDown.open h2:before {
+  content: "\ea0b";
 }
 
 .dropDown h3 {
@@ -115,19 +139,35 @@ h1, h2, h3, h4, h5, h6{
 
 .dropDown ul {
   margin:0;
+  padding:0 2px;
   margin-top:3px;
   list-style: none;
   height: 0;
-  transition: height var(--transition-time);
   font-size: var(--sidebar-dropdown-font-size);
 }
 
 .dropDown.open ul{
-  height:auto;
-  padding:2px;
+  height: auto;
 }
 
 .dropDown ul li {
-  background:var(--blackish);
-  padding:3px 0;
+  position: relative;
+  padding:5px 0 5px 25px;
+}
+
+.dropDown ul li.selected:before{
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  content: "\ea10";
+  position: absolute;
+  left:0px;
 }

@@ -3,6 +3,9 @@ module Messages
   )
 where
 
+import qualified Solvers.Messages (Msg)
+
 data Msg
   = NoOp
+  | SolverMessage Solvers.Messages.Msg
   deriving Show
