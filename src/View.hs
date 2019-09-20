@@ -11,6 +11,8 @@ import Miso
 import Messages
 import Model
 import qualified Solvers.View (viewOptions)
+import qualified Solvers.Model (Options(..))
+import qualified Solvers.Messages (Msg(..))
 
 view :: Model -> View Msg
 view model =
@@ -35,17 +37,54 @@ staticCss =
   ]
 
 sidebar :: Model -> View Msg
-sidebar Model{..} = 
+sidebar m@Model{..} = 
   div_ 
     [ id_ "sidebar" 
     ]
     [ newGameButton
-    , SolverMessage <$> Solvers.View.viewOptions solverOptions
+    , viewTabs m
+    , viewTab m
     ]
+
 
 newGameButton :: View Msg
 newGameButton =
   div_ 
     [ id_ "newGameButton" ]
     [ text "New game" ]
+
+viewTabs :: Model -> View Msg 
+viewTabs Model{selectedTab=tab}= 
+  div_ 
+    [ id_ "sidebarTabs" ]
+    [ createTab "icon-user" Player1
+    , createTab "icon-users" Player2
+    , createTab "icon-dice" Game
+    ]
+  where 
+    createTab icon t =
+      div_ 
+        [ classList_
+          [ ("option", True)
+          , ("selected", tab == t)
+          ]
+        , onClick (ChangeSidebarTab t)
+        ]
+        [ span_ [class_ icon ] [] ]
+
+viewTab :: Model -> View Msg 
+viewTab Model{selectedTab=Game, ..} = text ""
+viewTab Model{..} = viewSolverOptions (msg selectedTab) (options selectedTab)
+  where 
+    options Player1 = solverOptionsPlayer1
+    options Player2 = solverOptionsPlayer2
+    msg Player1 = SolverMessagePlayer1
+    msg Player2 = SolverMessagePlayer2
+    
+
+viewSolverOptions :: (Solvers.Messages.Msg -> Msg) -> Maybe Solvers.Model.Options -> View Msg
+viewSolverOptions _ Nothing = text ""
+viewSolverOptions msg (Just options) =
+  msg <$> Solvers.View.viewOptions options
+  
 

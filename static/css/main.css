@@ -21,7 +21,11 @@
   --sidebar-newGame-background: var(--red);
   --sidebar-newGame-foreground: var(--white);
   --sidebar-newGame-height: 90px;
-  --sidebar-newGame-bottom-margin: 40px;
+
+  --sidebar-tab-height: 40px;
+  --sidebar-tab-border-radius: 25px;
+  --sidebar-tab-bottom-margin: 10px;
+  --sidebar-tab-width: 90%;
 
   --sidebar-section-padding: 20px 25px;
   --sidebar-section-h1-size: 15px;
@@ -63,6 +67,7 @@ h1, h2, h3, h4, h5, h6{
   background: var(--sidebar-background);
   color: var(--sidebar-foreground);
   width: var(--sidebar-width);
+
   height:100%;
   overflow:auto;
   position:fixed;
@@ -73,7 +78,6 @@ h1, h2, h3, h4, h5, h6{
   color: var(--sidebar-newGame-foreground);
   height: var(--sidebar-newGame-height);
   line-height: var(--sidebar-newGame-height);
-  margin-bottom: var(--sidebar-newGame-bottom-margin);
 
   text-align: center;
   font-size: 15px;
@@ -95,10 +99,63 @@ h1, h2, h3, h4, h5, h6{
 
 #sidebar section h2{
   font-size: var(--sidebar-section-h2-size);
+  font-family: var(--default-font);
+
   text-transform: capitalize;
   font-weight: normal;
-  font-family: var(--default-font);
 }
+
+/*   Tabs    */
+#sidebarTabs {
+  height: var(--sidebar-tab-height);
+  background: var(--blackish);
+  border-bottom-left-radius: var(--sidebar-tab-border-radius);
+  border-bottom-right-radius: var(--sidebar-tab-border-radius);
+  margin-bottom: var(--sidebar-tab-bottom-margin);
+  width:var(--sidebar-tab-width);
+
+  display:flex;
+  margin-left:auto;
+  margin-right:auto;
+  justify-content: space-around;
+  box-sizing: border-box;
+  padding: 0 15px;
+}
+
+#sidebarTabs .option{
+  position: relative;
+  width: var(--sidebar-tab-height);
+  height: var(--sidebar-tab-height);
+  color: var(--sidebar-background);
+  line-height: var(--sidebar-tab-height);
+
+  cursor: pointer;
+  font-size:20px;
+  text-align:center;
+}
+
+#sidebarTabs .option:before{
+  content: '';
+  width: 0;
+  transition: width var(--transition-time);
+}
+
+#sidebarTabs .option.selected:before{
+  background: var(--sidebar-foreground);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width:100%;
+  height:3px;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+}
+
+
+
+/******************
+    Drop Down
+******************/
 
 .dropDown{
   cursor: pointer;
