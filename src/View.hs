@@ -74,12 +74,10 @@ viewTabs Model{selectedTab=tab}=
 
 viewTab :: Model -> View Msg 
 viewTab Model{selectedTab=Game, ..} = text ""
-viewTab Model{..} = viewSolverOptions (msg selectedTab) (options selectedTab)
-  where 
-    options Player1 = solverOptionsPlayer1
-    options Player2 = solverOptionsPlayer2
-    msg Player1 = SolverMessagePlayer1
-    msg Player2 = SolverMessagePlayer2
+viewTab Model{selectedTab=Player1, ..} 
+  = viewSolverOptions SolverMessagePlayer1 solverOptionsPlayer1
+viewTab Model{selectedTab=Player2, ..} 
+  = viewSolverOptions SolverMessagePlayer2 solverOptionsPlayer2
     
 
 viewSolverOptions :: (Solvers.Messages.Msg -> Msg) -> Maybe Solvers.Model.Options -> View Msg
