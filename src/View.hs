@@ -75,10 +75,23 @@ viewTabs Model{selectedTab=tab}=
 viewTab :: Model -> View Msg 
 viewTab Model{selectedTab=Game, ..} = text ""
 viewTab Model{selectedTab=Player1, ..} 
-  = viewSolverOptions SolverMessagePlayer1 solverOptionsPlayer1
+  = viewOptions player1Options (viewPlayerTab Player1Options)
 viewTab Model{selectedTab=Player2, ..} 
-  = viewSolverOptions SolverMessagePlayer2 solverOptionsPlayer2
+  = viewOptions player2Options (viewPlayerTab Player2Options)
     
+viewOptions :: OptionsTab a -> (a -> View Msg) -> View Msg
+viewOptions OptionsTab{modifiedOptions=o} viewFunc = 
+  viewFunc o 
+
+viewPlayerTab :: (PlayerOptionsMsg -> Msg) -> Maybe Solvers.Model.Options -> View Msg
+viewPlayerTab msg options = 
+  div_ 
+    [] 
+    [ body options ]
+  where 
+    body Nothing = text ""
+    body (Just o) = msg . SolverMessage <$> Solvers.View.viewOptions o
+
 
 viewSolverOptions :: (Solvers.Messages.Msg -> Msg) -> Maybe Solvers.Model.Options -> View Msg
 viewSolverOptions _ Nothing = text ""

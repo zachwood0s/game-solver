@@ -1,9 +1,14 @@
 module Messages 
-  ( Msg(..), Tab(..)
+  ( Msg(..), Tab(..), PlayerOptionsMsg(..)
   )
 where
 
 import qualified Solvers.Messages (Msg)
+
+data PlayerOptionsMsg 
+  = SolverMessage Solvers.Messages.Msg
+  | Save
+  deriving (Show)
 
 data Tab 
   = Player1
@@ -13,7 +18,7 @@ data Tab
 
 data Msg
   = NoOp
-  | SolverMessagePlayer1 Solvers.Messages.Msg
-  | SolverMessagePlayer2 Solvers.Messages.Msg
+  | Player1Options PlayerOptionsMsg
+  | Player2Options PlayerOptionsMsg
   | ChangeSidebarTab Tab
   deriving (Show)
