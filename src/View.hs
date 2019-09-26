@@ -10,6 +10,7 @@ import Miso
 
 import Messages
 import Model
+import qualified Shared.Checkbox (view)
 import qualified Solvers.View (viewOptions)
 import qualified Solvers.Model (Options(..))
 import qualified Solvers.Messages (Msg(..))
@@ -83,14 +84,20 @@ viewOptions :: OptionsTab a -> (a -> View Msg) -> View Msg
 viewOptions OptionsTab{modifiedOptions=o} viewFunc = 
   viewFunc o 
 
-viewPlayerTab :: (PlayerOptionsMsg -> Msg) -> Maybe Solvers.Model.Options -> View Msg
-viewPlayerTab msg options = 
+viewPlayerTab :: (PlayerOptionsMsg -> Msg) -> PlayerOptions -> View Msg
+viewPlayerTab msg PlayerOptions{..} = 
   div_ 
     [] 
-    [ body options ]
+    [ section_ 
+      [] 
+      [ h1_ [] [ text "Player" ]
+      , msg . Checkbox <$> Shared.Checkbox.view computerCheckbox 
+      ]
+    , msg . Solver <$> body solverOptions
+    ]
   where 
     body Nothing = text ""
-    body (Just o) = msg . SolverMessage <$> Solvers.View.viewOptions o
+    body (Just o) = Solvers.View.viewOptions o
 
 
 viewSolverOptions :: (Solvers.Messages.Msg -> Msg) -> Maybe Solvers.Model.Options -> View Msg

@@ -29,7 +29,7 @@
 
   --sidebar-section-padding: 20px 25px;
   --sidebar-section-h1-size: 15px;
-  --sidebar-section-h2-size: 20px;
+  --sidebar-section-h2-size: 18px;
   --sidebar-section-h3-size: 12px;
   --sidebar-section-foreground: var(--grey);
 
@@ -47,7 +47,6 @@
 body {
   background: var(--white);
   font-family: var(--default-font);
-  /* font-family: 'IBM Plex Sans Condensed', sans-serif; */
   margin:0;
 }
 
@@ -88,8 +87,23 @@ h1, h2, h3, h4, h5, h6{
 }
 
 #sidebar section{
+  position: relative;
   padding:var(--sidebar-section-padding);
   color: var(--sidebar-foreground);
+}
+
+#sidebar section:after{
+  content:"";
+  position: absolute;
+  bottom:-10px;
+  width:60%;
+  left:20%;
+  background: var(--blackish);
+  height:2px;
+}
+
+#sidebar section:last-child:after {
+  height:0;
 }
 
 #sidebar section h1{
@@ -103,6 +117,11 @@ h1, h2, h3, h4, h5, h6{
 
   text-transform: capitalize;
   font-weight: normal;
+}
+
+#sidebar section h2, #sidebar section h3 {
+  margin:0;
+  position: relative;
 }
 
 /*   Tabs    */
@@ -152,6 +171,38 @@ h1, h2, h3, h4, h5, h6{
 }
 
 
+/******************
+    Checkbox
+******************/
+
+.checkbox{
+  cursor: pointer;
+  position: relative;
+}
+
+.checkbox .box{
+  border: 2px solid var(--sidebar-foreground);
+  width: var(--sidebar-section-h2-size);
+  height: var(--sidebar-section-h2-size);
+  position: absolute;
+  right:0;
+  top:0;
+}
+
+.checkbox.checked .box:before {
+  content: '\ea10';
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 14px;
+  font-size:14px;
+  width:100%;
+  text-align:center;
+  display:inline-block;
+}
 
 /******************
     Drop Down
@@ -160,11 +211,6 @@ h1, h2, h3, h4, h5, h6{
 .dropDown{
   cursor: pointer;
   overflow: hidden;
-}
-
-.dropDown h2, .dropDown h3{
-  position: relative;
-  margin:0;
 }
 
 .dropDown h2:before {

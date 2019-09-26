@@ -17,7 +17,7 @@ showBoard (Board grid) = unlines ( map showRow grid)
       showMark Nothing = "_"
       showMark (Just a) = show a 
 
-data Game = Game 
+data Model = Model 
   { playerTurn :: Player
   , board :: Board
   , boardSize :: BoardSize

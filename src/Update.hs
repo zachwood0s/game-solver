@@ -7,39 +7,47 @@ where
 
 import Miso
 import Data.Bifunctor
+import Data.Map
 
 import Messages
 import Model
+import Solvers (solverMap)
+import qualified Shared.Checkbox (update)
 import qualified Solvers.Update (update)
-import qualified Solvers.Model (Options)
+import qualified Solvers.Model (Options, emptyOptions)
 
 update :: Msg -> Model -> Effect Msg Model
-
-{-
 update (Player1Options msg) m@Model{..} =
-   
-update (SolverMessagePlayer1 msg) m@Model{solverOptionsPlayer1=Just options} =
-  bimap SolverMessagePlayer1 updateModel (Solvers.Update.update msg options)
-  where
-    updateModel updated = m{ solverOptionsPlayer1 = Just updated }
-
-update (SolverMessagePlayer2 msg) m@Model{solverOptionsPlayer2=Just options} =
-  bimap SolverMessagePlayer2 updateModel (Solvers.Update.update msg options)
-  where
-    updateModel updated = m{ solverOptionsPlayer2 = Just updated }
--}
-
+  bimap Player1Options 
+    (asPlayer1OptionsIn m)
+    (updatePlayerOptions msg player1Options)
+update (Player2Options msg) m@Model{..} =
+  bimap Player2Options 
+    (asPlayer2OptionsIn m)
+    (updatePlayerOptions msg player2Options)
 update (ChangeSidebarTab tab) m =
   noEff m{selectedTab = tab};
-
 update _ m = noEff m
 
+updatePlayerOptions :: PlayerOptionsMsg -> OptionsTab PlayerOptions -> Effect PlayerOptionsMsg (OptionsTab PlayerOptions)
+updatePlayerOptions Save m = noEff m
+updatePlayerOptions (Solver subMsg) m@OptionsTab{..}
+  | Just x <- solverOptions modifiedOptions =
+    bimap Solver
+      (asModifiedOptionsIn m . asSolverOptionsIn modifiedOptions . Just)
+      (Solvers.Update.update subMsg x)
+  | otherwise = noEff m
+updatePlayerOptions (Checkbox subMsg) m@OptionsTab{..} =
+  bimap Checkbox 
+    (asModifiedOptionsIn m . setSolver . setCheckbox)
+    (Shared.Checkbox.update subMsg $ computerCheckbox modifiedOptions)
+  where 
+    setSolver = setSolverOptions $ newSolverOptions (solverOptions modifiedOptions)
+    setCheckbox = asComputerCheckboxIn modifiedOptions
+    newSolverOptions (Just _) = Nothing
+    newSolverOptions Nothing = Just $ Solvers.Model.emptyOptions (keys solverMap)
+updatePlayerOptions _ m = noEff m
 
-updatePlayerOptions :: (PlayerOptionsMsg -> Msg) 
-                    -> PlayerOptionsMsg 
-                    -> Solvers.Model.Options 
-                    -> (Solvers.Model.Options -> Model) 
-                    -> Effect Msg Model
-
-updatePlayerOptions msg (SolverMessage subMsg) options updateModel = 
-  bimap (msg . SolverMessage) updateModel (Solvers.Update.update subMsg options)
+{- 
+updater . setModifiedOptions . Just (updated)
+-}

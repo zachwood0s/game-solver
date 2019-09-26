@@ -3,10 +3,12 @@ module Messages
   )
 where
 
+import qualified Shared.Checkbox (Msg)
 import qualified Solvers.Messages (Msg)
 
 data PlayerOptionsMsg 
-  = SolverMessage Solvers.Messages.Msg
+  = Solver Solvers.Messages.Msg
+  | Checkbox Shared.Checkbox.Msg
   | Save
   deriving (Show)
 
