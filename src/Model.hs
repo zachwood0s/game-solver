@@ -7,6 +7,7 @@ module Model
   , setSavedOptions, setModifiedOptions, asSavedOptionsIn, asModifiedOptionsIn
   , PlayerOptions(..)
   , asSolverOptionsIn, setSolverOptions, asComputerCheckboxIn, setComputerCheckbox
+  , Game(..)
   ) 
 where
 
@@ -14,6 +15,7 @@ import Data.Map
 
 import qualified Solvers.Model
 import qualified Shared.Checkbox
+import qualified TicTacToe.Model
 import Solvers (solverMap)
 import Messages (Msg, Tab(..))
 
@@ -21,6 +23,22 @@ data OptionsTab a = OptionsTab
   { savedOptions :: a
   , modifiedOptions :: a
   } deriving Eq
+
+data Model = Model
+  { player1Options :: OptionsTab PlayerOptions
+  , player2Options :: OptionsTab PlayerOptions
+  , game :: Maybe Game
+  , selectedTab :: Tab
+  } deriving Eq
+
+data PlayerOptions = PlayerOptions 
+  { computerCheckbox :: Shared.Checkbox.Model 
+  , solverOptions :: Maybe Solvers.Model.Options 
+  } deriving Eq
+
+data Game 
+  = TicTacToe TicTacToe.Model.Model 
+  deriving Eq
 
 setModifiedOptions :: a -> OptionsTab a -> OptionsTab a
 setModifiedOptions o m = m {modifiedOptions = o}
@@ -34,12 +52,6 @@ setSavedOptions o m = m {savedOptions = o}
 asSavedOptionsIn :: OptionsTab a -> a -> OptionsTab a
 asSavedOptionsIn = flip setSavedOptions
 
-data Model = Model
-  { player1Options :: OptionsTab PlayerOptions
-  , player2Options :: OptionsTab PlayerOptions
-  , selectedTab :: Tab
-  } deriving Eq
-
 setPlayer1Options :: OptionsTab PlayerOptions -> Model -> Model
 setPlayer1Options o m = m {player1Options = o}
 
@@ -51,11 +63,6 @@ setPlayer2Options o m = m {player2Options = o}
 
 asPlayer2OptionsIn :: Model -> OptionsTab PlayerOptions -> Model
 asPlayer2OptionsIn = flip setPlayer2Options
-
-data PlayerOptions = PlayerOptions 
-  { computerCheckbox :: Shared.Checkbox.Model 
-  , solverOptions :: Maybe Solvers.Model.Options 
-  } deriving Eq
 
 emptyPlayerOptions :: PlayerOptions
 emptyPlayerOptions = 
@@ -82,4 +89,5 @@ emptyModel =
     { player1Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , player2Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , selectedTab = Player1
+    , game = (Just . TicTacToe) $ TicTacToe.Model.emptyModel (6, 10) 3
     }

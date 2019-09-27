@@ -57,7 +57,6 @@ h1, h2, h3, h4, h5, h6{
 }
 
 
-
 /*******************
       Sidebar 
 *******************/
@@ -273,4 +272,46 @@ h1, h2, h3, h4, h5, h6{
   content: "\ea10";
   position: absolute;
   left:0px;
+}
+
+
+/******************
+      Games
+******************/
+
+#gameCanvas{
+  left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  position: absolute;
+  top:0;
+}
+
+#board {
+  width:60%;
+}
+
+#board .row{
+  border-bottom: 10px solid var(--black);
+}
+
+#board .row .col:before{
+  content: '';
+  width: 0;
+  padding-bottom:100%;
+  display: block;
+}
+
+#board .row:last-child{
+  border:none
+}
+
+#board .row .col {
+  border-right: 10px solid var(--black);
+  font-size:100px;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+#board .row .col:last-child{
+  border:none;
 }

@@ -36,6 +36,7 @@ library
       Solvers.Messages
       Solvers.Update
       TicTacToe.Model
+      TicTacToe.View
       Utils
       Model
       Messages

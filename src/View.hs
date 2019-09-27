@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module View 
@@ -14,12 +14,14 @@ import qualified Shared.Checkbox (view)
 import qualified Solvers.View (viewOptions)
 import qualified Solvers.Model (Options(..))
 import qualified Solvers.Messages (Msg(..))
+import qualified TicTacToe.View
 
 view :: Model -> View Msg
 view model =
   let 
     body =
       [ sidebar model 
+      , displayGame (game model)
       ] ++ staticCss
   in
     div_ [] body
@@ -36,6 +38,18 @@ staticCss =
     , href_ "static/css/fonts.css"
     ]
   ]
+
+displayGame :: Maybe Game -> View Msg
+displayGame Nothing = text ""
+displayGame (Just game) =
+  div_ 
+    [ id_ "gameCanvas"
+    ]
+    [ display game
+    ]
+  where 
+    display (TicTacToe m) = TicTacToe.View.view m
+
 
 sidebar :: Model -> View Msg
 sidebar m@Model{..} = 
