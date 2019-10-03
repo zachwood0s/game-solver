@@ -5,6 +5,7 @@ where
 
 import qualified Shared.Checkbox (Msg)
 import qualified Solvers.Messages (Msg)
+import qualified TicTacToe.Messages (Msg)
 
 data PlayerOptionsMsg 
   = Solver Solvers.Messages.Msg
@@ -23,4 +24,6 @@ data Msg
   | Player1Options PlayerOptionsMsg
   | Player2Options PlayerOptionsMsg
   | ChangeSidebarTab Tab
+  | TicTacToe TicTacToe.Messages.Msg
+  | SaveOptions Tab
   deriving (Show)

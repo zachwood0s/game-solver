@@ -2,7 +2,7 @@
 
 module Model 
   ( Model(..), emptyModel
-  , setPlayer1Options, setPlayer2Options, asPlayer1OptionsIn, asPlayer2OptionsIn
+  , setPlayer1Options, setPlayer2Options, asPlayer1OptionsIn, asPlayer2OptionsIn, asGameIn, setGame
   , OptionsTab(..)
   , setSavedOptions, setModifiedOptions, asSavedOptionsIn, asModifiedOptionsIn
   , PlayerOptions(..)
@@ -37,7 +37,7 @@ data PlayerOptions = PlayerOptions
   } deriving Eq
 
 data Game 
-  = TicTacToe TicTacToe.Model.Model 
+  = TicTacToeGame TicTacToe.Model.Model 
   deriving Eq
 
 setModifiedOptions :: a -> OptionsTab a -> OptionsTab a
@@ -64,6 +64,12 @@ setPlayer2Options o m = m {player2Options = o}
 asPlayer2OptionsIn :: Model -> OptionsTab PlayerOptions -> Model
 asPlayer2OptionsIn = flip setPlayer2Options
 
+setGame:: Maybe Game -> Model -> Model 
+setGame g m = m{ game = g }
+
+asGameIn :: Model -> Maybe Game -> Model
+asGameIn = flip setGame
+
 emptyPlayerOptions :: PlayerOptions
 emptyPlayerOptions = 
   PlayerOptions
@@ -83,11 +89,12 @@ setComputerCheckbox o m = m {computerCheckbox = o}
 asComputerCheckboxIn :: PlayerOptions -> Shared.Checkbox.Model -> PlayerOptions
 asComputerCheckboxIn = flip setComputerCheckbox
 
+
 emptyModel :: Model 
 emptyModel = 
   Model 
     { player1Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , player2Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , selectedTab = Player1
-    , game = (Just . TicTacToe) $ TicTacToe.Model.emptyModel (6, 10) 3
+    , game = (Just . TicTacToeGame) $ TicTacToe.Model.emptyModel (5, 6) 4
     }

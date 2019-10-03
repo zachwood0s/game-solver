@@ -41,14 +41,7 @@ staticCss =
 
 displayGame :: Maybe Game -> View Msg
 displayGame Nothing = text ""
-displayGame (Just game) =
-  div_ 
-    [ id_ "gameCanvas"
-    ]
-    [ display game
-    ]
-  where 
-    display (TicTacToe m) = TicTacToe.View.view m
+displayGame (Just (TicTacToeGame m )) = TicTacToe <$> TicTacToe.View.view m
 
 
 sidebar :: Model -> View Msg
@@ -90,13 +83,23 @@ viewTabs Model{selectedTab=tab}=
 viewTab :: Model -> View Msg 
 viewTab Model{selectedTab=Game, ..} = text ""
 viewTab Model{selectedTab=Player1, ..} 
-  = viewOptions player1Options (viewPlayerTab Player1Options)
+  = viewOptions player1Options (viewPlayerTab Player1Options) Player1
 viewTab Model{selectedTab=Player2, ..} 
-  = viewOptions player2Options (viewPlayerTab Player2Options)
+  = viewOptions player2Options (viewPlayerTab Player2Options) Player2
+
     
-viewOptions :: OptionsTab a -> (a -> View Msg) -> View Msg
-viewOptions OptionsTab{modifiedOptions=o} viewFunc = 
-  viewFunc o 
+viewOptions :: OptionsTab a -> (a -> View Msg) -> Tab -> View Msg
+viewOptions OptionsTab{modifiedOptions=o} viewFunc tab = 
+  div_ 
+    []
+    [ viewFunc o 
+    , div_ 
+      [ class_ "saveButton"
+      , onClick (SaveOptions tab)
+      ]
+      [ text "Save Changes"
+      ]
+    ]
 
 viewPlayerTab :: (PlayerOptionsMsg -> Msg) -> PlayerOptions -> View Msg
 viewPlayerTab msg PlayerOptions{..} = 

@@ -3,7 +3,7 @@
 module Solvers.Model 
   ( ABScore(..), unwrapScore
   , Solver(..)
-  , SolverFunc, Options(..), emptyOptions
+  , SolverFunc, Options(..), emptyOptions, getSelectedSolver
   ) where
 
 import Data.Tree
@@ -55,6 +55,9 @@ data Options = Options
   , searchDepth :: Int 
   } deriving Eq
 
+getSelectedSolver :: Options -> MisoString 
+getSelectedSolver = selected . solverDropDown
+
 emptyOptions :: [MisoString] -> Options
 emptyOptions solverNames = 
   Options 
@@ -64,7 +67,7 @@ emptyOptions solverNames =
       , options = solverNames 
       , expanded = False
       }
-    , searchDepth = 1
+    , searchDepth = 4
     }
 
 unwrapScore :: ABScore a -> a 

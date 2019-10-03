@@ -2,6 +2,7 @@ module Utils
   ( inrange
   , fAnd2, fOr2
   , symbol, lexeme
+  , mapInd
   ) where
 
 import Text.ParserCombinators.Parsec
@@ -25,3 +26,7 @@ symbol :: Char -> Parser Char
 symbol s = lexeme (char s)
 lexeme :: Parser a -> Parser a
 lexeme parser = parser <* spaces
+
+
+mapInd :: (a -> Int -> b) -> [a] -> [b]
+mapInd f l = zipWith f l [0..]

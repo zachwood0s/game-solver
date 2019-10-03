@@ -8,6 +8,7 @@
   --blue: #247BA0;
   --green: #70C1B3;
   --grey: #9fa09f;
+  --light-grey: #d8d8d8;
   --white: #f9f9f9;
 
   --transition-time: .2s;
@@ -169,6 +170,19 @@ h1, h2, h3, h4, h5, h6{
   border-top-left-radius: 3px;
 }
 
+#sidebar .saveButton {
+  background: var(--blackish);
+  color: var(--white);
+  position: absolute;
+  bottom:20px;;
+  width:calc(100% - 40px);
+  left:20px;
+  height:75px;
+  text-align: center;
+  line-height: 75px;
+  cursor:pointer;
+}
+
 
 /******************
     Checkbox
@@ -279,19 +293,42 @@ h1, h2, h3, h4, h5, h6{
       Games
 ******************/
 
+#statusBar{
+  left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  position: absolute;
+  top: 0;
+  height: var(--sidebar-newGame-height);
+  border-bottom: 1px solid var(--light-grey);
+  color: var(--black)
+}
+
+#statusBar .gameState {
+  width:400px;
+  margin:auto;
+  text-align: center;
+  padding:20px;
+  font-size:35px;
+}
+
 #gameCanvas{
   left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   position: absolute;
-  top:0;
+  top: var(--sidebar-newGame-height);
+  height:calc(100% - var(--sidebar-newGame-height));
 }
 
 #board {
   width:60%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 #board .row{
-  border-bottom: 10px solid var(--black);
+  border-bottom: 5px solid var(--black);
 }
 
 #board .row .col:before{
@@ -306,12 +343,23 @@ h1, h2, h3, h4, h5, h6{
 }
 
 #board .row .col {
-  border-right: 10px solid var(--black);
-  font-size:100px;
+  border-right: 5px solid var(--black);
+  font-size:50px;
   display: inline-block;
   box-sizing: border-box;
+  cursor: pointer;
+  position: relative;
+  color: var(--black);
 }
 
 #board .row .col:last-child{
   border:none;
+}
+
+#board .row .col span {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
