@@ -29,29 +29,29 @@ update _ Nothing (Move row col) m@Model{playerTurn=False} =
 
 -- Player 1 is an AI and it is player 1's turn
 --update s1 s2 DoAi m@Model{..} 
---  | playerTurn && isJust s1 = 
-update (Just s) _ DoAi m@Model{playerTurn=True, ..} = 
-  let
-    solverStrat = fromJust $ Data.Map.lookup (Solvers.Model.getSelectedSolver s) Solvers.solverMap
+--playerTurn && isJust s1 = 
+
+update (Just s) _ DoAi m@Model{playerTurn = True} = doAIMove s m <# pure DoAi
+update _ (Just s) DoAi m@Model{playerTurn = False} = doAIMove s m <# pure DoAi
+update Nothing Nothing DoAi m = noEff m
+
+update _ _ _ m = noEff m
+
+doAIMove :: Solvers.Model.Options -> Model -> Model 
+doAIMove s m@Model{..} = 
+  let 
+    strategy = fromJust $ Data.Map.lookup (Solvers.Model.getSelectedSolver s) Solvers.solverMap
     tree = buildTree (Solvers.Model.searchDepth s) m
-    moveLevels = levels $ solverStrat solver True tree
-    allMoves = getAllMoves moveLevels
-    (x, y) = fst $ getOptimalMove True allMoves
-  in
-    move x y m <# pure DoAi
+    moveLevels = levels $ strategy solver playerTurn tree
+    optimalMove :: (Int, Int)
+    optimalMove = fst $ getOptimalMove playerTurn (getAllMoves moveLevels)
+  in 
+    fromMaybe m (uncurry move optimalMove m)
   where
     getAllMoves (_ : xs : _) = xs
     getAllMoves _ = []
     getOptimalMove True nodes = maximumBy (comparing snd) (reverse nodes)
     getOptimalMove False nodes = minimumBy (comparing snd) nodes 
-
--- Player 2 is an AI and it is player 1's turn
-update _ (Just s) DoAi m@Model{playerTurn=False, ..} = 
-  noEff m
-
--- No Ai players given
-update Nothing Nothing DoAi m = noEff m
-update _ _ _ m = noEff m
 
 move :: Int -> Int -> Model -> Maybe Model 
 move _ _ Model{gameState = Stalemate} = Nothing

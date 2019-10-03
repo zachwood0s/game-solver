@@ -16,6 +16,7 @@ import qualified Shared.Checkbox (update)
 import qualified Solvers.Update (update)
 import qualified Solvers.Model (Options, emptyOptions)
 import qualified TicTacToe.Update 
+import qualified TicTacToe.Messages
 
 update :: Msg -> Model -> Effect Msg Model
 update (Player1Options msg) m@Model{..} =
@@ -37,9 +38,16 @@ update (TicTacToe msg) m@Model{game=Just (TicTacToeGame tic)} =
     bimap TicTacToe 
       (asGameIn m . Just . TicTacToeGame) 
       (TicTacToe.Update.update p1Solver p2Solver msg tic)
-update (SaveOptions Player1) m = noEff $ saveOptions (player1Options m) (asPlayer1OptionsIn m)
-update (SaveOptions Player2) m = noEff $ saveOptions (player2Options m) (asPlayer2OptionsIn m)
-update (SaveOptions Game) m = noEff m
+
+update msg m 
+  | SaveOptions Player1 <- msg = 
+      saveOptions (player1Options m) (asPlayer1OptionsIn m) <# effect (game m)
+  | SaveOptions Player2 <- msg = 
+      saveOptions (player2Options m) (asPlayer2OptionsIn m) <# effect (game m)
+  | otherwise = noEff m
+  where 
+    effect (Just (TicTacToeGame g)) = pure (TicTacToe TicTacToe.Messages.DoAi)
+
 update _ m = noEff m
 
 saveOptions :: OptionsTab a -> (OptionsTab a -> Model) -> Model
@@ -49,9 +57,9 @@ updatePlayerOptions :: PlayerOptionsMsg -> OptionsTab PlayerOptions -> Effect Pl
 updatePlayerOptions Save m = noEff m
 updatePlayerOptions (Solver subMsg) m@OptionsTab{..}
   | Just x <- solverOptions modifiedOptions =
-    bimap Solver
-      (asModifiedOptionsIn m . asSolverOptionsIn modifiedOptions . Just)
-      (Solvers.Update.update subMsg x)
+      bimap Solver
+        (asModifiedOptionsIn m . asSolverOptionsIn modifiedOptions . Just)
+        (Solvers.Update.update subMsg x)
   | otherwise = noEff m
 updatePlayerOptions (Checkbox subMsg) m@OptionsTab{..} =
   bimap Checkbox 

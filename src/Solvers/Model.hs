@@ -46,9 +46,10 @@ data Solver a b = Solver
   { getScore :: b -> ABScore Int
   , evaluateScore :: a -> Int
   , buildNode :: ABScore Int -> a -> b
+  , getMoves :: a -> [a]
   }
 
-type SolverFunc a b = Solver a b -> Bool -> Tree a -> Tree b
+type SolverFunc a b = Solver a b -> Bool -> a -> b
 
 data Options = Options
   { solverDropDown :: Shared.DropDown.Model
