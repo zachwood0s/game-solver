@@ -11,6 +11,10 @@ import Data.List (tails, transpose, maximumBy, minimumBy)
 import Data.Ord
 import Data.Tree
 
+import GHCJS.Types
+import GHCJS.Foreign.Callback
+import GHCJS.Marshal
+
 import qualified Solvers.Model
 import qualified Solvers
 import TicTacToe.Messages 
@@ -31,25 +35,22 @@ update _ Nothing (Move row col) m@Model{playerTurn=False} =
 --update s1 s2 DoAi m@Model{..} 
 --playerTurn && isJust s1 = 
 
-update (Just s) _ DoAi m@Model{playerTurn = True} = doAIMove s m <# pure DoAi
-update _ (Just s) DoAi m@Model{playerTurn = False} = doAIMove s m <# pure DoAi
+update (Just s) _ DoAi m@Model{playerTurn = True, gameState=Running} = doAIMove s m 
+update _ (Just s) DoAi m@Model{playerTurn = False, gameState=Running} = doAIMove s m 
 update Nothing Nothing DoAi m = noEff m
 
 update _ _ _ m = noEff m
 
-doAIMove :: Solvers.Model.Options -> Model -> Model 
+doAIMove :: Solvers.Model.Options -> Model -> Effect Msg Model 
 doAIMove s m@Model{..} = 
   let 
     strategy = fromJust $ Data.Map.lookup (Solvers.Model.getSelectedSolver s) Solvers.solverMap
-    tree = buildTree (Solvers.Model.searchDepth s) m
-    moveLevels = levels $ strategy solver playerTurn tree
+    moves = strategy solver playerTurn (Solvers.Model.searchDepth s) ((-1, -1), m)
     optimalMove :: (Int, Int)
-    optimalMove = fst $ getOptimalMove playerTurn (getAllMoves moveLevels)
+    optimalMove = fst $ getOptimalMove playerTurn moves
   in 
-    fromMaybe m (uncurry move optimalMove m)
+    fromMaybe m (uncurry move optimalMove m) <# pure DoAi
   where
-    getAllMoves (_ : xs : _) = xs
-    getAllMoves _ = []
     getOptimalMove True nodes = maximumBy (comparing snd) (reverse nodes)
     getOptimalMove False nodes = minimumBy (comparing snd) nodes 
 
@@ -88,16 +89,17 @@ getGameState b winLen
     isWin player = any (winningSeq player) $ getSequences b winLen 
     isStalemate = all (notElem Nothing) b
 
-moves :: Model -> [DecisionNode]
-moves Model{gameState = Won _} = []
-moves Model{gameState = Stalemate} = []
-moves game@Model{boardSize = (rows, cols)} = 
+moves :: DecisionNode -> [DecisionNode]
+moves (_, Model{gameState = Won _}) = []
+moves (_, Model{gameState = Stalemate}) = []
+moves (_, game@Model{boardSize = (rows, cols)}) = 
   mapMaybe shouldInclude [getMove x y | x <- [0..cols-1], y <- [0..rows-1]]
   where 
     makeMove x y m = ((x, y), m)
     getMove x y = makeMove x y (move x y game)
     shouldInclude ((x, y), m) = fmap (makeMove x y) m
 
+{-
 buildTree :: Int -> Model -> Tree DecisionNode
 buildTree depth g = buildTree' depth ((-1, -1), g)
   where 
@@ -105,3 +107,56 @@ buildTree depth g = buildTree' depth ((-1, -1), g)
     buildTree' depth' node@(_, game) = Node node (getLeaves depth' game)
     getLeaves 0 _ = []
     getLeaves depth' game = map (buildTree' (depth' - 1)) (moves game)
+-}
+
+solver :: Solvers.Model.Solver DecisionNode (InputPosition, Solvers.Model.ABScore Int)
+solver = Solvers.Model.Solver 
+  { getScore = snd 
+  , evaluateScore = evalScore . snd
+  , buildNode = \s (p, _) -> (p, s)
+  , getMoves = moves
+  , nextPlayer = \_ current -> not current
+  }
+  
+evalScore :: Model -> Int
+evalScore Model{..} = 
+  sum $ map evaluateSeq (getSequences board winningSeqLen)
+
+-- Evaluation Huristic
+-- 1, 10, 100 for every one in a row of the same piece
+evaluateSeq :: [BoardMark] -> Int
+evaluateSeq s = 
+  let 
+    allMarks = catMaybes s -- Get rid of empty squares
+    cnt = length allMarks 
+  in 
+    if and allMarks then 10^cnt
+    else if not (or allMarks) then -(10^cnt)
+    else 0
+
+chop :: Int -> [a] -> [[a]]
+chop k xs 
+  | length chop' < k = []
+  | otherwise = chop' : chop k (tail xs)
+  where chop' = take k xs
+
+diagonal :: [[a]] -> [a]
+diagonal [] = []
+diagonal ([]:_) = []
+diagonal ((x:_):rows) = x : diagonal (map tail rows)
+
+diagonals :: [[a]] -> [[a]]
+diagonals m = map diagonal (init . tails $ m)
+     ++ tail (map diagonal (init . tails $ transpose m))
+            
+getSequences :: Board -> Int -> Board
+getSequences b winLen =
+  rows ++ cols ++ fdiag ++ bdiag
+  where 
+    rows = concatMap (chop winLen) b
+    cols = concatMap (chop winLen) $ transpose b
+    fdiag = concatMap (chop winLen) $ diagonals b
+    bdiag = concatMap (chop winLen) $ diagonals (map reverse b)
+
+foreign import javascript unsafe "document.write($1);"
+  documentWrite :: JSVal -> IO ()

@@ -47,9 +47,10 @@ data Solver a b = Solver
   , evaluateScore :: a -> Int
   , buildNode :: ABScore Int -> a -> b
   , getMoves :: a -> [a]
+  , nextPlayer :: a -> Bool -> Bool
   }
 
-type SolverFunc a b = Solver a b -> Bool -> a -> b
+type SolverFunc a b = Solver a b -> Bool -> Int -> a -> [b]
 
 data Options = Options
   { solverDropDown :: Shared.DropDown.Model
@@ -68,7 +69,7 @@ emptyOptions solverNames =
       , options = solverNames 
       , expanded = False
       }
-    , searchDepth = 4
+    , searchDepth = 5
     }
 
 unwrapScore :: ABScore a -> a 
