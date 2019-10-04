@@ -69,7 +69,7 @@ emptyOptions solverNames =
       , options = solverNames 
       , expanded = False
       }
-    , searchDepth = 5
+    , searchDepth = 3
     }
 
 unwrapScore :: ABScore a -> a 

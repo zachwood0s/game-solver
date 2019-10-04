@@ -50,6 +50,7 @@ doAIMove s m@Model{..} =
     optimalMove = fst $ getOptimalMove playerTurn moves
   in 
     fromMaybe m (uncurry move optimalMove m) <# pure DoAi
+      --putStrLn $ unlines (map (show . fst) moves) >> pure DoAi
   where
     getOptimalMove True nodes = maximumBy (comparing snd) (reverse nodes)
     getOptimalMove False nodes = minimumBy (comparing snd) nodes 
