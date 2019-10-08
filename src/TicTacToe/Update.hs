@@ -16,7 +16,7 @@ import GHCJS.Foreign.Callback
 import GHCJS.Marshal
 
 import qualified Solvers.Model
-import qualified Solvers
+import Solvers (runSolverFromString)
 import TicTacToe.Messages 
 import TicTacToe.Model
 import Utils
@@ -42,18 +42,12 @@ update Nothing Nothing DoAi m = noEff m
 update _ _ _ m = noEff m
 
 doAIMove :: Solvers.Model.Options -> Model -> Effect Msg Model 
-doAIMove s m@Model{..} = 
+doAIMove s@Solvers.Model.Options{..} m@Model{..} = 
   let 
-    strategy = fromJust $ Data.Map.lookup (Solvers.Model.getSelectedSolver s) Solvers.solverMap
-    moves = strategy solver playerTurn (Solvers.Model.searchDepth s) ((-1, -1), m)
-    optimalMove :: (Int, Int)
-    optimalMove = fst $ getOptimalMove playerTurn moves
+    key = Solvers.Model.getSelectedSolver s
+    optimalMove = snd $ runSolverFromString key solver playerTurn searchDepth ((-1, -1), m)
   in 
-    fromMaybe m (uncurry move optimalMove m) <# pure DoAi
-      --putStrLn $ unlines (map (show . fst) moves) >> pure DoAi
-  where
-    getOptimalMove True nodes = maximumBy (comparing snd) (reverse nodes)
-    getOptimalMove False nodes = minimumBy (comparing snd) nodes 
+    trace ("applying: " ++ show optimalMove) $ fromMaybe m (uncurry move optimalMove m) <# pure DoAi
 
 move :: Int -> Int -> Model -> Maybe Model 
 move _ _ Model{gameState = Stalemate} = Nothing
@@ -110,14 +104,15 @@ buildTree depth g = buildTree' depth ((-1, -1), g)
     getLeaves depth' game = map (buildTree' (depth' - 1)) (moves game)
 -}
 
-solver :: Solvers.Model.Solver DecisionNode (InputPosition, Solvers.Model.ABScore Int)
+solver :: Solvers.Model.Solver DecisionNode InputPosition
 solver = Solvers.Model.Solver 
-  { getScore = snd 
-  , evaluateScore = evalScore . snd
-  , buildNode = \s (p, _) -> (p, s)
+  { evaluateScore = evalScore . snd
+  , buildNode = \s (p, _) -> (s, p)
   , getMoves = moves
   , nextPlayer = \_ current -> not current
+  , showNode = show
   }
+
   
 evalScore :: Model -> Int
 evalScore Model{..} = 

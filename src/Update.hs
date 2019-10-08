@@ -6,6 +6,7 @@ module Update
 where
 
 import Miso
+import Miso.String
 import Data.Bifunctor
 import Data.Map
 
@@ -69,7 +70,8 @@ updatePlayerOptions (Checkbox subMsg) m@OptionsTab{..} =
     setSolver = setSolverOptions $ newSolverOptions (solverOptions modifiedOptions)
     setCheckbox = asComputerCheckboxIn modifiedOptions
     newSolverOptions (Just _) = Nothing
-    newSolverOptions Nothing = Just $ Solvers.Model.emptyOptions (keys solverMap)
+    newSolverOptions Nothing = Just $ Solvers.Model.emptyOptions options
+    options = Prelude.map toMisoString (keys solverMap)
 updatePlayerOptions _ m = noEff m
 
 {- 

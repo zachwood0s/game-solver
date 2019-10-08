@@ -3,8 +3,11 @@
 module Solvers.Model 
   ( ABScore(..), unwrapScore
   , Solver(..)
-  , SolverFunc, Options(..), emptyOptions, getSelectedSolver
+  , Options(..), emptyOptions, getSelectedSolver
+  , SolverFunc, SolverResult, getScore
   ) where
+
+import Miso.String (fromMisoString)
 
 import Data.Tree
 import Miso.String (MisoString)
@@ -43,22 +46,27 @@ instance (Ord a) => Ord (ABScore a) where
 
 
 data Solver a b = Solver 
-  { getScore :: b -> ABScore Int
-  , evaluateScore :: a -> Int
-  , buildNode :: ABScore Int -> a -> b
+  { evaluateScore :: a -> Int
+  , buildNode :: ABScore Int -> a -> SolverResult b
   , getMoves :: a -> [a]
   , nextPlayer :: a -> Bool -> Bool
+  , showNode :: b -> String
+  , generateHash :: a -> Int
   }
 
-type SolverFunc a b = Solver a b -> Bool -> Int -> a -> [b]
+type SolverFunc a b = Solver a b -> Bool -> Int -> a -> [SolverResult b]
+type SolverResult b = (ABScore Int, b)
+
+getScore :: SolverResult b -> ABScore Int
+getScore = fst
 
 data Options = Options
   { solverDropDown :: Shared.DropDown.Model
   , searchDepth :: Int 
   } deriving Eq
 
-getSelectedSolver :: Options -> MisoString 
-getSelectedSolver = selected . solverDropDown
+getSelectedSolver :: Options -> String 
+getSelectedSolver = fromMisoString . selected . solverDropDown
 
 emptyOptions :: [MisoString] -> Options
 emptyOptions solverNames = 
