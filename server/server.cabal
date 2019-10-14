@@ -28,3 +28,12 @@ executable server
                     wai-extra,
                     warp
 
+executable benchmark
+  main-is: Benchmark.hs 
+  ghc-options: -O2 -threaded -Wall
+  default-language: Haskell2010 
+  build-depends: 
+    base < 5,
+    criterion,
+    common,
+    containers

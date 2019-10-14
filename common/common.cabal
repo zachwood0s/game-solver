@@ -5,14 +5,32 @@ cabal-version:      >=1.10
 license:            PublicDomain
 
 library
-  exposed-modules:  Common
+  exposed-modules:  
+    Common,
+    Utils,
+    ExtendedNum,
+    Solvers,
+    Solvers.Model,
+    Solvers.Utils,
+    Solvers.Minimax,
+    Solvers.MinimaxCached,
+    Games.TicTacToe.Model,
+    Games.TicTacToe.Update,
+    Shared.Checkbox,
+    Shared.DropDown
+
   ghc-options:      -Wall
   default-language: Haskell2010
-  build-depends:    aeson,
-                    base < 5,
-                    containers,
-                    lens,
-                    miso,
-                    network-uri,
-                    servant
+  build-depends:    
+    aeson,
+    base < 5,
+    containers,
+    lens,
+    miso,
+    network-uri,
+    servant,
+    mtl,
+    random,
+    vector,
+    containers
 
