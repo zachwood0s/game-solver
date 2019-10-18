@@ -16,8 +16,9 @@ solverMap :: Map String (SolverFunc a b)
 solverMap =
   fromList 
     [ ("Minimax", minimax)
-    , ("Minimax w/ Alpha Beta", minimaxAB)
+    --  ("Alpha Beta", minimaxAB)
     , ("Minimax Cached", minimaxCached)
+    --, ("Alpha Cached", minimaxABCached)
     --, ("MTD(f)", mtdf)
     --, ("MTD(f) w/ Memory", mtdfMem)
     ]

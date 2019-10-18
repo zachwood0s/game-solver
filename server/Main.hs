@@ -5,7 +5,6 @@
 
 module Main where
 
-import qualified Common
 import           Data.Proxy
 import qualified Lucid                                as L
 import qualified Lucid.Base                           as L
@@ -20,6 +19,10 @@ import qualified System.IO                            as IO
 
 import qualified Miso
 import Miso ( View )
+
+import qualified Common
+import Messages
+import Model
 
 main :: IO ()
 main = do
@@ -42,25 +45,16 @@ app =
     static = Servant.serveDirectoryFileServer "static"
 
     serverHandlers :: Servant.Server ServerRoutes
-    serverHandlers = homeServer :<|> flippedServer
+    serverHandlers = homeServer 
 
     -- Alternative type:
     -- Servant.Server (ToServerRoutes Common.Home HtmlPage Common.Action)
     -- Handles the route for the home page, rendering Common.homeView.
-    homeServer :: Servant.Handler (HtmlPage (View Common.Action))
+    homeServer :: Servant.Handler (HtmlPage (View Msg))
     homeServer =
         pure $ HtmlPage $
           Common.viewModel $
-          Common.initialModel Common.homeLink
-
-    -- Alternative type:
-    -- Servant.Server (ToServerRoutes Common.Flipped HtmlPage Common.Action)
-    -- Renders the /flipped page.
-    flippedServer :: Servant.Handler (HtmlPage (View Common.Action))
-    flippedServer =
-        pure $ HtmlPage $
-          Common.viewModel $
-          Common.initialModel Common.flippedLink
+          emptyModel Common.homeLink
 
     -- The 404 page is a Wai application because the endpoint is Raw.
     -- It just renders the page404View and sends it to the client.
@@ -93,7 +87,7 @@ instance L.ToHtml a => L.ToHtml (HtmlPage a) where
 -- Converts the ClientRoutes (which are a servant tree of routes leading to
 -- some `View action`) to lead to `Get '[Html] (HtmlPage (View Common.Action))`
 type ServerRoutes
-   = Miso.ToServerRoutes Common.ViewRoutes HtmlPage Common.Action
+   = Miso.ToServerRoutes Common.ViewRoutes HtmlPage Msg
 
 -- The server serves static files besides the ServerRoutes, among which is the
 -- javascript file of the client.

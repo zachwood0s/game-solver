@@ -5,11 +5,6 @@ module Solvers.Minimax
   ( minimax, minimaxAB, mtdf--, mtdfMem
   ) where
 
-import Debug.Trace
-import Data.List
-import Data.Ord
-import Data.Bifunctor
-
 import Solvers.Utils
 import Solvers.Model
 import ExtendedNum
@@ -98,50 +93,6 @@ mtdf' s@Solver{..} maxPlayer depth guess upperBound lowerBound game
         extractGuess (Exact a) = a 
         extractGuess (Estimate a) = a
         go beta s m d g = minimaxHelper s m (beta - 1) beta d (getMoves g)
-
-{-
-
-data MTDFState b n = MTDFState 
-  { upperBound :: ExtendedNum Int 
-  , lowerBound :: ExtendedNum Int 
-  , currentGuess :: SolverResult b
-  , cache :: M.IntMap n
-  }
-
-mtdfMem :: Solver a b -> Bool -> Int -> a -> [SolverResult b]
-mtdfMem s@Solver{..} maxPlayer depth game = 
-  let 
-    startState = MTDFState 
-      { upperBound = PosInf
-      , lowerBound = NegInf 
-      , currentGuess = buildNode (Exact 500) game
-      , cache = M.empty
-      }
-    res = evalState (mtdfMem' s maxPlayer depth game) startState
-  in [res]
-
-mtdfMem' :: Solver a b -> Bool -> Int -> a -> State (MTDFState b (ABCacheNode b)) (SolverResult b)
-mtdfMem' s@Solver{..} maxPlayer depth game = do 
-  state@MTDFState{..} <- get
-  if lowerBound >= upperBound then return currentGuess
-  else do
-    let extendedGuess = makeExtended currentGuess 
-    let beta = max extendedGuess (lowerBound + 1)
-    let newGuess = runSolver (go beta) s maxPlayer depth game
-    let newExtended = makeExtended newGuess 
-    put $ state 
-      { upperBound = if newExtended < beta then newExtended else upperBound
-      , lowerBound = if newExtended < beta then lowerBound else newExtended
-      , currentGuess = newGuess
-      }
-    mtdfMem' s maxPlayer depth game
-  where 
-    makeExtended = Only . extractGuess . getScore 
-    extractGuess (Exact a) = a 
-    extractGuess (Estimate a) = a
-    go beta s m d g = minimaxHelper s m (beta - 1) beta d (getMoves g)
-    
--}
 {-
 data NodeFlag = Upper | Lower | ExactBound
 isUpper :: NodeFlag -> Bool

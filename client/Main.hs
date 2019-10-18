@@ -16,28 +16,28 @@ import qualified Miso
 import Miso ( View, App(..) )
 import qualified Miso.String as Miso
 
+import Messages
+import Model
+
 main :: IO ()
 main =
   Miso.miso $ \currentURI -> App
-    { initialAction = Common.NoOp
-    , model         = Common.initialModel currentURI
+    { initialAction = NoOp
+    , model         = emptyModel currentURI
     , update        = Miso.fromTransition . updateModel
     , view          = Common.viewModel
     , events        = Miso.defaultEvents
-    , subs          = [ Miso.uriSub Common.HandleURIChange ]
+    , subs          = [ Miso.uriSub HandleURIChange ]
     , mountPoint    = Nothing
     }
 
-updateModel
-    :: Common.Action
-    -> Miso.Transition Common.Action Common.Model ()
+updateModel :: Msg
+            -> Miso.Transition Msg Model ()
 updateModel action =
     case action of
-      Common.NoOp          -> pure ()
-      Common.AddOne        -> Common.counterValue += 1
-      Common.SubtractOne   -> Common.counterValue -= 1
-      Common.ChangeURI uri ->
+      NoOp          -> pure ()
+      ChangeURI uri ->
         Miso.scheduleIO $ do
           Miso.pushURI uri
-          pure Common.NoOp
-      Common.HandleURIChange uri -> Common.uri .= uri
+          pure NoOp
+      HandleURIChange uri -> mUri .= uri

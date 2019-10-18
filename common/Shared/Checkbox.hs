@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Shared.Checkbox 
   ( Msg(..), Model(..)
@@ -8,32 +9,36 @@ module Shared.Checkbox
 
 import Miso
 import Miso.String (MisoString)
+import Control.Lens ((^.), makeLenses)
 
-data Msg = Check deriving Show
+data Msg 
+  = Check 
+  | NoOp deriving Show
+
+data Interface action = Interface 
+  { passAction :: Msg -> action 
+  }
 
 data Model = Model
-  { title :: MisoString 
-  , checked :: Bool
+  { _mTitle :: MisoString 
+  , _mChecked :: Bool
   } deriving Eq
 
-{-
-update :: Msg -> Model -> Effect Msg Model
-update Check (Model t checked) = noEff $ Model t (not checked)
--}
+makeLenses ''Model
 
-view :: Model -> View Msg
-view (Model title checked) =
+view :: Interface action -> Model -> View Msg
+view iface m =
   div_ 
     [ classList_ 
       [ ("checkbox", True)
-      , ("checked", checked)
+      , ("checked", m ^. mChecked)
       ]
     , onClick Check
     ]
-    [ h2_ [] [ text title]
+    [ h2_ [] [ text (m ^. mTitle)]
     , div_ [ class_ "box"] []
     ]
 
 emptyCheckbox :: MisoString -> Model
 emptyCheckbox title = 
-  Model { title = title, checked = False }
+  Model { _mTitle = title, _mChecked = False }

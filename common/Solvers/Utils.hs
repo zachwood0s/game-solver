@@ -2,7 +2,6 @@ module Solvers.Utils
   ( runSolver
   ) where
 
-import Data.Map
 import Data.Ord
 import Data.List
 import Debug.Trace
