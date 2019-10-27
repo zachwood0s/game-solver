@@ -1,17 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-module Solvers.Model 
+module Solvers.Types 
   ( ABScore(..), unwrapScore
   , Solver(..)
   , Options(..), emptyOptions, getSelectedSolver
   , SolverFunc, SolverResult, getScore
+  , Msg(..), Interface(..)
+  , mSolverDropDown, mSearchDepth
   ) where
 
 import Miso.String (fromMisoString)
 
+import Control.Lens (makeLenses)
 import Data.Tree
 import Miso.String (MisoString)
-import Shared.DropDown (Model(..))
+
+import qualified Shared.DropDown
+
+data Msg 
+  = DropDown Shared.DropDown.Msg
+  deriving Show
+
+data Interface action = Interface 
+  { passAction :: Msg -> action 
+  }
 
 data ABScore a = Estimate a | Exact a deriving (Eq)
 
@@ -61,23 +74,25 @@ getScore :: SolverResult b -> ABScore Int
 getScore = fst
 
 data Options = Options
-  { solverDropDown :: Shared.DropDown.Model
-  , searchDepth :: Int 
+  { _mSolverDropDown :: Shared.DropDown.Model
+  , _mSearchDepth :: Int 
   } deriving Eq
 
+makeLenses ''Options
+
 getSelectedSolver :: Options -> String 
-getSelectedSolver = fromMisoString . selected . solverDropDown
+getSelectedSolver = fromMisoString . Shared.DropDown._mSelected . _mSolverDropDown
 
 emptyOptions :: [MisoString] -> Options
 emptyOptions solverNames = 
   Options 
-    { solverDropDown = Shared.DropDown.Model 
-      { title = "Algorithm"
-      , selected = head solverNames
-      , options = solverNames 
-      , expanded = False
+    { _mSolverDropDown = Shared.DropDown.Model 
+      { Shared.DropDown._mTitle = "Algorithm"
+      , Shared.DropDown._mSelected = head solverNames
+      , Shared.DropDown._mOptions = solverNames 
+      , Shared.DropDown._mExpanded = False
       }
-    , searchDepth = 3
+    , _mSearchDepth = 3
     }
 
 unwrapScore :: ABScore a -> a 

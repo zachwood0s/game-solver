@@ -21,8 +21,6 @@ import qualified Miso
 import Miso ( View )
 
 import qualified Common
-import Messages
-import Model
 
 main :: IO ()
 main = do
@@ -50,11 +48,11 @@ app =
     -- Alternative type:
     -- Servant.Server (ToServerRoutes Common.Home HtmlPage Common.Action)
     -- Handles the route for the home page, rendering Common.homeView.
-    homeServer :: Servant.Handler (HtmlPage (View Msg))
+    homeServer :: Servant.Handler (HtmlPage (View Common.Msg))
     homeServer =
         pure $ HtmlPage $
           Common.viewModel $
-          emptyModel Common.homeLink
+          Common.emptyModel Common.homeLink
 
     -- The 404 page is a Wai application because the endpoint is Raw.
     -- It just renders the page404View and sends it to the client.
@@ -81,13 +79,23 @@ instance L.ToHtml a => L.ToHtml (HtmlPage a) where
             , L.makeAttribute "async" mempty
             , L.makeAttribute "defer" mempty
             ]
+          
+          L.with (L.link_ mempty)
+            [ L.makeAttribute "rel" "stylesheet"
+            , L.makeAttribute "href" "/static/main.css"
+            ]
+
+          L.with (L.link_ mempty)
+            [ L.makeAttribute "rel" "stylesheet"
+            , L.makeAttribute "href" "/static/fonts.css"
+            ]
 
         L.body_ (L.toHtml x)
 
 -- Converts the ClientRoutes (which are a servant tree of routes leading to
 -- some `View action`) to lead to `Get '[Html] (HtmlPage (View Common.Action))`
 type ServerRoutes
-   = Miso.ToServerRoutes Common.ViewRoutes HtmlPage Msg
+   = Miso.ToServerRoutes Common.ViewRoutes HtmlPage Common.Msg
 
 -- The server serves static files besides the ServerRoutes, among which is the
 -- javascript file of the client.

@@ -2,10 +2,10 @@ module Solvers.Utils
   ( runSolver
   ) where
 
-import Data.Ord
-import Data.List
-import Debug.Trace
-import Solvers.Model
+import Data.Ord (comparing)
+import Data.List (maximumBy, minimumBy)
+
+import Solvers.Types
 
 runSolver :: SolverFunc a b -> Solver a b -> Bool -> Int -> a -> SolverResult b 
 runSolver strategy solver maxPlayer depth game = 

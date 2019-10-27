@@ -14,7 +14,7 @@ import Data.Tree
 import Data.Vector ((!))
 import Data.Bits
 
-import qualified Solvers.Model
+import qualified Solvers.Types
 import Solvers (runSolverFromString)
 import Games.TicTacToe.Messages 
 import Games.TicTacToe.Model
@@ -103,8 +103,8 @@ buildTree depth g = buildTree' depth ((-1, -1), g)
     getLeaves depth' game = map (buildTree' (depth' - 1)) (moves game)
 -}
 
-solver :: Solvers.Model.Solver DecisionNode InputPosition
-solver = Solvers.Model.Solver 
+solver :: Solvers.Types.Solver DecisionNode InputPosition
+solver = Solvers.Types.Solver 
   { evaluateScore = evalScore . snd
   , buildNode = \s (p, _) -> (s, p)
   , getMoves = moves

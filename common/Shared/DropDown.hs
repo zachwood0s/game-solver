@@ -1,13 +1,15 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Shared.DropDown
   ( Model(..), Msg(..)
-  , Shared.DropDown.view --, Shared.DropDown.update
+  , Shared.DropDown.view, Interface(..)
+  , mExpanded, mSelected
   ) where
 
 import Miso
 import Miso.String (MisoString)
+import Control.Lens ((^.), makeLenses)
 
 data Msg 
   = Toggle 
@@ -15,38 +17,37 @@ data Msg
   deriving Show
 
 data Model = Model 
-  { title :: MisoString
-  , selected :: MisoString 
-  , options :: [MisoString] 
-  , expanded :: Bool
+  { _mTitle :: MisoString
+  , _mSelected :: MisoString 
+  , _mOptions :: [MisoString] 
+  , _mExpanded :: Bool
   } deriving (Eq)
 
+data Interface action = Interface 
+  { passAction :: Msg -> action 
+  }
 
-{-
-update :: Msg -> Model -> Effect Msg Model
-update Toggle m@Model{expanded=e} = noEff m { expanded = not e }
-update (Select s) m = noEff m {selected = s}
--}
+makeLenses ''Model
 
-view :: Model -> View Msg
-view Model{..} =
+view :: Interface action -> Model -> View action
+view iface m =
   div_ 
     [ classList_ 
       [ ("dropDown", True)
-      , ("open", expanded)
+      , ("open", m ^. mExpanded)
       ]
-    , onClick Toggle
+    , onClick $ passAction iface Toggle
     ]
-    [ h2_ [] [ text title ]
-    , h3_ [] [ text selected ]
-    , ul_ [] (map createListItem options)
+    [ h2_ [] [ text (m ^. mTitle) ]
+    , h3_ [] [ text (m ^. mSelected) ]
+    , ul_ [] (map createListItem (m ^. mOptions))
     ]
   where 
     createListItem item = 
       li_ 
-        [ onClick (Select item) 
+        [ onClick $ passAction iface (Select item) 
         , classList_
-          [ ("selected", item == selected)
+          [ ("selected", item == (m ^. mSelected))
           ]
         ] 
         [ text item ]

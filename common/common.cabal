@@ -7,12 +7,10 @@ license:            PublicDomain
 library
   exposed-modules:  
     Common,
-    Messages,
-    Model,
     Utils,
     ExtendedNum,
     Solvers,
-    Solvers.Model,
+    Solvers.Types,
     Solvers.Utils,
     Solvers.Minimax,
     Solvers.MinimaxCached,

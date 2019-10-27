@@ -2,16 +2,9 @@ import Criterion.Main
 import qualified Data.Map as M
 
 import Solvers 
-import Solvers.Model (Solver)
+import Solvers.Types (Solver)
 import qualified Games.TicTacToe.Model as TicTacToe
 import qualified Games.TicTacToe.Update as TicTacToe
--- The function we're benchmarking.
-fib m | m < 0     = error "negative!"
-      | otherwise = go m
-  where
-    go 0 = 0
-    go 1 = 1
-    go n = go (n-1) + go (n-2)
 
 -- Our benchmark harness.
 main = 

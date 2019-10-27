@@ -14,7 +14,7 @@ import qualified Data.IntMap.Strict as M
 import Control.Monad.State.Lazy
 import Control.Lens
 
-import Solvers.Model
+import Solvers.Types
 import ExtendedNum
 
 -- Minimax Cache Node

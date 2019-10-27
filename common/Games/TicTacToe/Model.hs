@@ -9,8 +9,9 @@ import Data.Maybe
 import Control.Monad 
 import Control.Monad.State.Lazy
 import qualified Data.Vector as V
-import Solvers.Model
 import System.Random
+
+import Solvers.Types
 
 type Player = Bool
 data GameState = Won Player | Stalemate | Running deriving (Show, Eq)

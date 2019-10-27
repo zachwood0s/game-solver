@@ -6,7 +6,7 @@ module Solvers.Minimax
   ) where
 
 import Solvers.Utils
-import Solvers.Model
+import Solvers.Types
 import ExtendedNum
 
 minimax :: Solver a b -> Bool -> Int -> a -> [SolverResult b]

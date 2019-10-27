@@ -4,7 +4,8 @@
 module Shared.Checkbox 
   ( Msg(..), Model(..)
   , Shared.Checkbox.view --Shared.Checkbox.update
-  , emptyCheckbox
+  , emptyCheckbox, Interface(..)
+  , mChecked, mTitle
   ) where
 
 import Miso
@@ -26,14 +27,14 @@ data Model = Model
 
 makeLenses ''Model
 
-view :: Interface action -> Model -> View Msg
+view :: Interface action -> Model -> View action
 view iface m =
   div_ 
     [ classList_ 
       [ ("checkbox", True)
       , ("checked", m ^. mChecked)
       ]
-    , onClick Check
+    , onClick $ passAction iface Check
     ]
     [ h2_ [] [ text (m ^. mTitle)]
     , div_ [ class_ "box"] []
