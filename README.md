@@ -22,7 +22,7 @@ data Game action = Game
   , view :: Interface action -> Miso.View action 
   } 
 ```
-`GameM` is a Reader/Writer monad which keeps track of the actions a game wants to perform as well as the configuration of the game. The configuration currently consists of the solver options for both player 1 and player 2.
+`GameM` is a Reader/Writer monad which keeps track of the actions a game wants to perform after the update function completes as well as the configuration of the game. The configuration currently consists of the solver options for both player 1 and player 2.
 
 Notice the `Game` type has no mention of a "game state". A typical instantiation of a game would look something like:
 ```haskell
