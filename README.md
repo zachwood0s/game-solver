@@ -10,6 +10,41 @@ cd $(nix-build) && bin/server
 
 **Note**: The current working directory is important when running the server. The server won't be able to find the clientside part of the app when running the server from some place *other* than the folder with `bin` and `static`. This will prevent the javascript from loading and make the buttons not work. In other news, that's a great way of looking at the part of the app sent by the server.
 
+## Features
+
+### Solving Algorithms
+
+#### Currently Supported
+
+- Minimax
+- Minimax w/ Alpha Beta Pruning
+- Minimax Cached (version of minimax using transposition table)
+- Minimax W/ Alpha Beta Pruning Cached
+
+#### Planned 
+
+- MTD-f w/ iterative deepening
+- NegaScout
+- SSS*
+
+#### Improvements
+
+- Move ordering
+- Utilize Killer Heuristic
+
+### Games 
+
+#### Currently Supported
+
+- TicTacToe (m,n,k)
+
+#### Planned
+
+- Connect4
+- Scrabble
+
+
+
 ## Structure
 
 ### Games
