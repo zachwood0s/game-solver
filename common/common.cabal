@@ -14,9 +14,9 @@ library
     Solvers.Utils,
     Solvers.Minimax,
     Solvers.MinimaxCached,
-    Games.TicTacToe.Model,
-    Games.TicTacToe.Update,
-    Games.TicTacToe.Messages,
+    Games.Games,
+    Games.Types,
+    Games.TicTacToe,
     Shared.Checkbox,
     Shared.DropDown
 
@@ -33,5 +33,6 @@ library
     mtl,
     random,
     vector,
-    containers
+    containers,
+    transformers
 

@@ -17,6 +17,9 @@ import Miso ( View, App(..) )
 import qualified Miso.String as Miso
 import Debug.Trace
 import Data.Map (keys)
+import qualified Data.Map as M
+import Control.Monad.Reader (runReader)
+import Control.Monad.Writer.Lazy (tell, lift, liftIO)
 
 import Common
 import Solvers
@@ -24,6 +27,8 @@ import "common" Solvers
 import qualified Solvers.Types
 import qualified Shared.Checkbox
 import qualified "common" Shared.Checkbox
+import qualified Games.Types as Games
+import qualified Games.Games as Games
 
 main :: IO ()
 main =
@@ -59,11 +64,28 @@ updateModel action =
     SaveOptions Player2 -> do
       v <- use (mPlayer2Options . mModifiedOptions)
       (mPlayer2Options . mSavedOptions) .= v
-    TicTacToe _ -> pure ()
+    StartGame game -> case M.lookup game Games.emptyGameModels of 
+      Just empty -> 
+        mGame .= trace ("Starting " ++ show game) Just empty
+      Nothing -> trace ("Couldn't find " ++ show game) pure ()
+    GameMsg msg -> do
+      m <- use mGame
+      config <- playerConfig
+      case m of 
+        Just game -> 
+          let (g, actions) = Games.updateGame config iGame msg game
+          in do 
+            tell $ map (\a sink -> liftIO . sink =<< a) actions
+            mGame .= Just g
+        Nothing -> pure ()
+    where 
+      solver = mSavedOptions . mSolverOptions 
+      playerConfig = do 
+        player1 <- use (mPlayer1Options . solver)
+        player2 <- use (mPlayer2Options . solver)
+        return $ Games.PlayerConfig player1 player2
       
-
-
-
+      
 updatePlayerOptions :: (PlayerOptionsMsg -> Msg) 
                     -> PlayerOptionsMsg 
                     -> Miso.Transition Msg (OptionsTab PlayerOptions) ()
@@ -79,6 +101,5 @@ updatePlayerOptions passAction msg = case msg of
   Solver subMsg ->  
     zoom (mModifiedOptions . mSolverOptions . traverse) $ 
       Solvers.update (iSolver passAction) subMsg
-
 
 

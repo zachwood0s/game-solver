@@ -10,11 +10,9 @@ module Solvers.Types
   , mSolverDropDown, mSearchDepth
   ) where
 
-import Miso.String (fromMisoString)
-
+import Miso.String (fromMisoString, MisoString)
 import Control.Lens (makeLenses)
 import Data.Tree
-import Miso.String (MisoString)
 
 import qualified Shared.DropDown
 
@@ -98,3 +96,4 @@ emptyOptions solverNames =
 unwrapScore :: ABScore a -> a 
 unwrapScore (Estimate a) = a
 unwrapScore (Exact a) = a
+

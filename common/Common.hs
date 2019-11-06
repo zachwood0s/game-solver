@@ -21,12 +21,11 @@ import Miso.Html
 import qualified Miso.String as Miso
 import qualified Network.URI as Network
 
-import qualified Games.TicTacToe.Model
+import qualified Games.TicTacToe
 import qualified Shared.Checkbox
-
 import qualified Solvers
 import qualified Solvers.Types
-import qualified Games.TicTacToe.Messages (Msg)
+import qualified Games.Types as Games
 
 data PlayerOptionsMsg 
   = Solver Solvers.Types.Msg
@@ -41,10 +40,11 @@ data Tab
 
 data Msg
   = NoOp
+  | StartGame Games.Games
+  | GameMsg Games.Msg
   | Player1Options PlayerOptionsMsg
   | Player2Options PlayerOptionsMsg
   | ChangeSidebarTab Tab
-  | TicTacToe Games.TicTacToe.Messages.Msg
   | SaveOptions Tab  
   | ChangeURI !Network.URI
   | HandleURIChange !Network.URI
@@ -67,18 +67,14 @@ data Model = Model
   { _mUri :: !Network.URI
   , _mPlayer1Options :: OptionsTab PlayerOptions
   , _mPlayer2Options :: OptionsTab PlayerOptions
-  , _mGame :: Maybe Game
+  , _mGame :: Maybe (Games.Game Msg)
   , _mSelectedTab :: !Tab
-  } deriving Eq
+  } deriving (Eq)
 
 data PlayerOptions = PlayerOptions 
   { _mComputerCheckbox :: Shared.Checkbox.Model 
   , _mSolverOptions :: Maybe Solvers.Types.Options
   } deriving Eq
-
-data Game 
-  = TicTacToeGame Games.TicTacToe.Model.Model
-  deriving Eq
 
 makeLenses ''OptionsTab
 makeLenses ''Model
@@ -91,7 +87,7 @@ emptyModel uri =
     , _mPlayer1Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , _mPlayer2Options = OptionsTab emptyPlayerOptions emptyPlayerOptions
     , _mSelectedTab = Player1
-    , _mGame = (Just . TicTacToeGame) $ Games.TicTacToe.Model.emptyModel (5, 6) 4
+    , _mGame = Nothing
     }
 
 emptyPlayerOptions :: PlayerOptions
@@ -120,10 +116,14 @@ homeView m =
   let 
     body =
       [ sidebar m 
-      --, displayGame (game model)
+      , gameView
       ] 
   in
     div_ [] body
+  where 
+    gameView = case m ^. mGame of 
+      Just g -> Games.view g iGame
+      Nothing -> text ""
 
 page404View :: View Msg
 page404View =
@@ -153,7 +153,9 @@ sidebar m@Model{..} =
 newGameButton :: View Msg
 newGameButton =
   div_ 
-    [ id_ "newGameButton" ]
+    [ id_ "newGameButton"
+    , onClick (StartGame Games.TicTacToeGame) 
+    ]
     [ text "New game" ]
 
 viewTabs :: Model -> View Msg 
@@ -222,4 +224,10 @@ iSolver :: (PlayerOptionsMsg -> Msg) -> Solvers.Types.Interface Msg
 iSolver msg =
   Solvers.Types.Interface 
     { passAction = msg . Solver 
+    }
+
+iGame :: Games.Interface Msg 
+iGame = 
+  Games.Interface
+    { passAction = GameMsg
     }

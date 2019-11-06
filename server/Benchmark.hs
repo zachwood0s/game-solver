@@ -3,8 +3,7 @@ import qualified Data.Map as M
 
 import Solvers 
 import Solvers.Types (Solver)
-import qualified Games.TicTacToe.Model as TicTacToe
-import qualified Games.TicTacToe.Update as TicTacToe
+import qualified Games.TicTacToe as TicTacToe
 
 -- Our benchmark harness.
 main = 
