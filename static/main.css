@@ -391,12 +391,12 @@ h1, h2, h3, h4, h5, h6{
   background: transparent;
 }
 #top .col {
-  border: 4px dashed black;
+  border: 4px dashed var(--black) !important;
 }
 
 #top.redPlayer .col:hover{
-  background:red;
+  background:var(--red);
 }
 #top.yellowPlayer .col:hover{
-  background:yellow;
+  background:var(--yellow);
 }
