@@ -154,7 +154,7 @@ newGameButton :: View Msg
 newGameButton =
   div_ 
     [ id_ "newGameButton"
-    , onClick (StartGame Games.TicTacToeGame) 
+    , onClick (StartGame Games.Connect4Game) 
     ]
     [ text "New game" ]
 

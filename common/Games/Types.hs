@@ -8,6 +8,8 @@ import Control.Monad.Trans.Reader
 import qualified Miso 
 
 import qualified Solvers.Types
+import qualified Games.Messages.TicTacToe as TicTacToe
+import qualified Games.Messages.Connect4 as Connect4
 
 data Games 
   = TicTacToeGame
@@ -57,21 +59,10 @@ instance Eq (Game action) where
 ----------------}
 
 data Msg 
-  = TicTacToe TicTacToeMsg
+  = TicTacToe TicTacToe.Msg
+  | Connect4 Connect4.Msg
   | NoOp
   deriving (Show, Eq)
-
-
-{----------------
-    TicTacToe
-----------------}
-
-data TicTacToeMsg 
-  = Move Int Int
-  | DoAi
-  deriving (Show, Eq)
-
-
 
 {----------------
     Utils

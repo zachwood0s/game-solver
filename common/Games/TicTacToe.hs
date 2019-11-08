@@ -21,7 +21,8 @@ import Utils
 import qualified Solvers.Types as S
 import Games.Types
 import Games.Utils
-import Solvers as S
+import Games.Messages.TicTacToe
+import qualified Solvers as S
 
 {----------------
     Game Model
@@ -89,7 +90,7 @@ drawStatus m=
 drawBoard :: Model -> Interface action -> View action
 drawBoard m iface = 
   div_ 
-    [ id_ "board" ]
+    [ id_ "board", class_ "ticTacToe"]
     $ mapInd drawRow (m ^. mBoard)
   where
     (rows, cols) = m ^. mBoardSize
@@ -118,13 +119,13 @@ showGameState _ x = showPlayer x ++ "'s Turn"
     Game Logic
 ----------------}
 ticTacToe :: Model -> Game action
-ticTacToe m = trace "Makin game" $ Game 
-  { Games.Types.update = trace "touchin this" $ Games.TicTacToe.update m
+ticTacToe m = Game 
+  { Games.Types.update = Games.TicTacToe.update m
   , Games.Types.view = Games.TicTacToe.view m
   , Games.Types.gameType = TicTacToeGame
   }
 
-update :: Model -> Interface action -> Msg -> GameM action (Game action)
+update :: Model -> Interface action -> Games.Types.Msg -> GameM action (Game action)
 update m iface (TicTacToe msg) = do
   playerTurn <- isPlayerTurn (m ^. mPlayerTurn)
   aiTurn <- isAiTurn (m ^. mPlayerTurn)

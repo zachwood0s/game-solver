@@ -35,6 +35,8 @@
   --sidebar-section-foreground: var(--grey);
 
   --sidebar-dropdown-font-size: 14px;
+
+  --game-connect4-margin: 5px;
 }
 
 
@@ -321,14 +323,14 @@ h1, h2, h3, h4, h5, h6{
 }
 
 #board {
-  width:60%;
+  width:45%;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-#board .row{
+#board.ticTacToe .row{
   border-bottom: 5px solid var(--black);
 }
 
@@ -363,4 +365,38 @@ h1, h2, h3, h4, h5, h6{
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+#board.connect4 .row{
+  background: var(--blue);
+  padding: 0px 20px;;
+}
+
+#board.connect4 .col{
+  border:none;
+  border-radius:50%;
+  background: white;
+  margin:5px;
+  cursor: default;
+}
+
+#board.connect4 .col.redPlayer{
+  background: var(--red);
+}
+
+#board.connect4 .col.yellowPlayer{
+  background: var(--yellow);
+}
+#board #top.row{
+  background: transparent;
+}
+#top .col {
+  border: 4px dashed black;
+}
+
+#top.redPlayer .col:hover{
+  background:red;
+}
+#top.yellowPlayer .col:hover{
+  background:yellow;
 }

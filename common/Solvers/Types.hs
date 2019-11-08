@@ -90,7 +90,7 @@ emptyOptions solverNames =
       , Shared.DropDown._mOptions = solverNames 
       , Shared.DropDown._mExpanded = False
       }
-    , _mSearchDepth = 3
+    , _mSearchDepth = 4
     }
 
 unwrapScore :: ABScore a -> a 

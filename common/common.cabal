@@ -18,6 +18,9 @@ library
     Games.Games,
     Games.Types,
     Games.TicTacToe,
+    Games.Connect4,
+    Games.Messages.TicTacToe,
+    Games.Messages.Connect4,
     Shared.Checkbox,
     Shared.DropDown
 
