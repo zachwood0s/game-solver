@@ -8,6 +8,7 @@ module Solvers
 
 import Data.Map
 import Miso 
+import Miso.String (toMisoString)
 import Control.Lens ((^.))
 
 import Solvers.Minimax
@@ -34,9 +35,6 @@ runSolverFromString name s maxPlayer depth game =
     Just strategy -> runSolver strategy s maxPlayer depth game
     Nothing -> buildNode s (Exact 0) game
 
-
-
-
 -- VIEW --
 viewOptions :: Interface action -> Solvers.Types.Options -> Miso.View action
 viewOptions iface o = 
@@ -44,8 +42,16 @@ viewOptions iface o =
     [] 
     [ h1_ [] [ text "Solver" ]
     , Shared.DropDown.view (iDropdown iface) (o ^. mSolverDropDown)
+    , viewDepthInput iface (o ^. mSearchDepth)
     ]
 
+viewDepthInput :: Interface action -> Int -> Miso.View action
+viewDepthInput iface depth = 
+  input_ 
+    [ value_ ((toMisoString . show) depth)
+    , onInput (passAction iface . UpdateDepth)
+    , type_ "number"
+    ]
 
 iDropdown :: Interface action -> Shared.DropDown.Interface action 
 iDropdown iface = 

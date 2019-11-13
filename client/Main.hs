@@ -61,9 +61,11 @@ updateModel action =
     SaveOptions Player1 -> do
       v <- use (mPlayer1Options . mModifiedOptions)
       (mPlayer1Options . mSavedOptions) .= v
+      Miso.scheduleIO $ pure (GameMsg Games.DoAI)
     SaveOptions Player2 -> do
       v <- use (mPlayer2Options . mModifiedOptions)
       (mPlayer2Options . mSavedOptions) .= v
+      Miso.scheduleIO $ pure (GameMsg Games.DoAI)
     StartGame game -> case M.lookup game Games.emptyGameModels of 
       Just empty -> 
         mGame .= trace ("Starting " ++ show game) Just empty

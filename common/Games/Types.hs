@@ -61,6 +61,7 @@ instance Eq (Game action) where
 data Msg 
   = TicTacToe TicTacToe.Msg
   | Connect4 Connect4.Msg
+  | DoAI
   | NoOp
   deriving (Show, Eq)
 

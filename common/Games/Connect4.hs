@@ -149,16 +149,19 @@ connect4 m = Game
   }
 
 update :: Model -> Interface action -> Games.Types.Msg -> GameM action (Game action)
+update m iface DoAI = do
+  aiTurn <- isAiTurn (m ^. mPlayerTurn)
+  case aiTurn of 
+    Just s -> do 
+      gameAction iface DoAI
+      return $ connect4 (doAIMove s m)
+    _ -> return $ connect4 m
 update m iface (Connect4 msg) = do 
   playerTurn <- isPlayerTurn (m ^. mPlayerTurn)
-  aiTurn <- isAiTurn (m ^. mPlayerTurn)
   case msg of 
     Move col | playerTurn -> do 
-      gameAction iface $ Connect4 DoAi
+      gameAction iface DoAI
       return $ connect4 (fromMaybe m (move col m))
-    DoAi | Just s <- aiTurn -> do 
-      gameAction iface $ Connect4 DoAi 
-      return $ connect4 (doAIMove s m)
     _ -> return $ connect4 m
 
 -- Wrong msg type was sent 
@@ -192,7 +195,7 @@ move x m
   | validMove x = 
     let 
       y = lastEmpty (transpose (m ^. mBoard) !! x) 0
-      newBoard = trace ("y pos" ++ show y) Control.Lens.set (ix y . ix x) (Just (m ^. mPlayerTurn)) (m ^. mBoard)
+      newBoard = Control.Lens.set (ix y . ix x) (Just (m ^. mPlayerTurn)) (m ^. mBoard)
     in 
       Just m 
         { _mPlayerTurn = getNextPlayer (m ^. mPlayerTurn)
@@ -226,6 +229,14 @@ getGameState b winLen
 getNextPlayer :: Player -> Player 
 getNextPlayer = not 
 
+moveWOrder :: Model -> [DecisionNode]
+moveWOrder m = 
+  map snd (sortOn fst $ (zip weights (moves m)))
+  where 
+    (rows, cols) = m ^. mBoardSize
+    weights = map (abs . ((-) (cols `div` 2))) [0..cols-1]
+
+
 {----------------
     Solver
 ----------------}
@@ -233,7 +244,7 @@ solver :: S.Solver DecisionNode InputPosition
 solver = S.Solver 
   { S.evaluateScore = evalScore . snd
   , S.buildNode = \s (p, _) -> (s, p)
-  , S.getMoves = moves . snd
+  , S.getMoves = moveWOrder . snd
   , S.nextPlayer = const getNextPlayer
   , S.showNode = show
   , S.generateHash = \(_, m) -> computeZobristHash (m ^. mBoard) (m ^. mZobrist)
