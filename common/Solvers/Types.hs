@@ -18,6 +18,7 @@ import qualified Shared.DropDown
 
 data Msg 
   = DropDown Shared.DropDown.Msg
+  | UpdateDepth MisoString
   deriving Show
 
 data Interface action = Interface 
@@ -90,7 +91,7 @@ emptyOptions solverNames =
       , Shared.DropDown._mOptions = solverNames 
       , Shared.DropDown._mExpanded = False
       }
-    , _mSearchDepth = 4
+    , _mSearchDepth = 6
     }
 
 unwrapScore :: ABScore a -> a 

@@ -126,16 +126,19 @@ ticTacToe m = Game
   }
 
 update :: Model -> Interface action -> Games.Types.Msg -> GameM action (Game action)
+update m iface DoAI = do 
+  aiTurn <- isAiTurn (m ^. mPlayerTurn)
+  case aiTurn of 
+    Just s -> do 
+      gameAction iface DoAI
+      return $ ticTacToe (doAIMove s m)
+    _ -> return $ ticTacToe m
 update m iface (TicTacToe msg) = do
   playerTurn <- isPlayerTurn (m ^. mPlayerTurn)
-  aiTurn <- isAiTurn (m ^. mPlayerTurn)
   case  msg of 
     Move row col | playerTurn -> do
-      gameAction iface $ TicTacToe DoAi
+      gameAction iface DoAI
       return $ ticTacToe (fromMaybe m (move col row m))
-    DoAi | Just s <- aiTurn -> do
-      gameAction iface $ TicTacToe DoAi
-      return $ ticTacToe (doAIMove s m)
     _ -> return $ ticTacToe m
 --Wrong msg type was sent somehow
 update m _ _ = return $ ticTacToe m 
@@ -210,17 +213,18 @@ solver = S.Solver
   
 evalScore :: Model -> Int
 evalScore m = 
-  sum $ map evaluateSeq (getSequences (m ^. mBoard) (m ^. mWinningSeqLen))
+  sum $ map (evaluateSeq (m ^. mWinningSeqLen)) (getSequences (m ^. mBoard) (m ^. mWinningSeqLen)) 
 
 -- Evaluation Huristic
 -- 1, 10, 100 for every one in a row of the same piece
-evaluateSeq :: [BoardMark] -> Int
-evaluateSeq s = 
+evaluateSeq :: Int -> [BoardMark] -> Int
+evaluateSeq secLen s = 
   let 
     allMarks = catMaybes s -- Get rid of empty squares
     cnt = length allMarks 
+    score = if cnt == secLen then 10^(secLen * 2) else 10^cnt
   in 
-    if and allMarks then 10^cnt
-    else if not (or allMarks) then -(10^cnt)
+    if and allMarks then score
+    else if not (or allMarks) then -score
     else 0
 
