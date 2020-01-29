@@ -10,10 +10,12 @@ import qualified Miso
 import qualified Solvers.Types
 import qualified Games.Messages.TicTacToe as TicTacToe
 import qualified Games.Messages.Connect4 as Connect4
+import qualified Games.Messages.GOPS as GOPS
 
 data Games 
   = TicTacToeGame
   | Connect4Game
+  | GOPSGame
   deriving (Show, Eq, Ord)
 
 data Interface action = Interface
@@ -61,6 +63,7 @@ instance Eq (Game action) where
 data Msg 
   = TicTacToe TicTacToe.Msg
   | Connect4 Connect4.Msg
+  | GOPS GOPS.Msg
   | DoAI
   | NoOp
   deriving (Show, Eq)
@@ -72,4 +75,5 @@ data Msg
 showGame :: Games -> String
 showGame TicTacToeGame = "Tic Tac Toe"
 showGame Connect4Game = "Connect4"
+showGame GOPSGame = "GOPS"
 
