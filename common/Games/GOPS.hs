@@ -68,8 +68,16 @@ view :: Model -> Interface action -> View action
 view m iface = 
   div_ 
     []
-    [ text "You're playing gops"
+    [ div_
+      [ id_ "gameCanvas" ]
+      (map (flip viewCard iface) [1..m^.mCardAmount])
     ]
+
+viewCard :: Card -> Interface action -> View action
+viewCard c iface = 
+  a_ 
+    [ onClick (passAction iface $ GOPS $ Move c) ]
+    [ text . toMisoString $ show c ]
   
 {----------------
     Game Logic
@@ -87,8 +95,45 @@ update m iface (GOPS msg) = do
   playerTurn <- isPlayerTurn (m ^. mPlayerTurn)
   case msg of 
     Move cardVal | playerTurn -> do 
-      gameLog iface "SelectedCard"
+      trace "hit" $ gameLog iface (putStrLn "SelectedCard")
       return $ gops m 
     _ -> return $ gops m
 update m _ _ = return $ gops m
 
+move :: Card -> Model -> Maybe Model
+move _ Model{_mGameState = Stalemate} = Nothing
+move _ Model{_mGameState = Won _} = Nothing
+move c m 
+  | validMove c =
+      let newHands = map updateHand $ zip [1..] (m ^. mPlayerHands)
+      in 
+        Just m 
+          { _mPlayerTurn = getNextPlayer (m ^. mPlayerTurn)
+          , _mGameState = getGameState newHands 
+          , _mPlayerHands = newHands
+          }
+  | otherwise = Nothing
+  where 
+    validMove = flip elem ((m ^. mPlayerHands) !! playerIx)
+    playerIx = fromEnum (m ^. mPlayerTurn)
+    updateHand (ix, hand) = 
+      if ix == playerIx then delete c hand
+      else hand
+
+updatePlayerHand :: Card -> Model -> Model
+updatePlayerHand c m = 
+  Control.Lens.set (ix playerIx) (playCard c playerHand) playerHand
+  where 
+    playerIx = fromEnum (m ^. mPlayerTurn)
+    playerHand = (m ^. mPlayerHands) !! playerIx
+
+    
+playCard :: Card -> [Card] -> [Card]
+playCard = delete 
+
+getGameState :: [[Card]] -> GameState 
+getGameState ([]:[]:_) = Won True 
+getGameState _ = Running
+
+getNextPlayer :: Player -> Player 
+getNextPlayer = not
